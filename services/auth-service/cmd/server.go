@@ -2,12 +2,17 @@ package cmd
 
 import (
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 	connection "github.com/rhythin/bookspot/auth-service/internal/connection/postgres"
+	"github.com/rhythin/bookspot/auth-service/internal/handler/rest"
+	"github.com/rhythin/bookspot/auth-service/internal/model"
+	router "github.com/rhythin/bookspot/auth-service/internal/router/rest"
+	"github.com/rhythin/bookspot/auth-service/internal/service"
 	"github.com/rhythin/bookspot/services/shared/connection/postgres"
-	"github.com/rhythin/bookspot/services/shared/logger"
+	logger "github.com/rhythin/bookspot/services/shared/customlogger"
 )
 
 func main() {
@@ -20,7 +25,10 @@ func main() {
 	}
 
 	// initilize logger
-	logger := logger.InitLogger()
+	logger, err := logger.InitLogger()
+	if err != nil {
+		log.Fatal("failed to initialize logger", err)
+	}
 	defer logger.Sync()
 
 	logger.Sugar().Infow("logger setup successfully")
@@ -45,9 +53,20 @@ func main() {
 	defer sqldb.Close()
 
 	// initilize the model, service and handler layers
+	model := model.New(DB)
+	service := service.New(model)
+	handler := rest.New(service)
 
 	// initialize the router
+	r := router.NewRouter(handler)
 
 	// start the server
+	port := os.Getenv("PORT")
+	if port == "" {
+		logger.Sugar().Infow("PORT not set, defaulting to 8080")
+		port = "8080"
+	}
+	logger.Sugar().Infow("server started on port", "Port", port)
+	http.ListenAndServe(":"+port, r)
 
 }
