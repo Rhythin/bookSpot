@@ -3,10 +3,11 @@ package user
 import (
 	"context"
 
+	"github.com/rhythin/bookspot/auth-service/internal/entities"
 	"go.uber.org/zap"
 )
 
-func (u *user) CreateUser(ctx context.Context, user *User) error {
+func (u *user) CreateUser(ctx context.Context, user *entities.User) error {
 
 	err := u.db.WithContext(ctx).
 		Create(user).

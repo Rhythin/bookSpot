@@ -9,8 +9,8 @@ type Model struct {
 	User user.User
 }
 
-func New(db *gorm.DB) *Model {
-	return &Model{
+func New(db *gorm.DB) Model {
+	return Model{
 		User: user.New(db),
 	}
 }

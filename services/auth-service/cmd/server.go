@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	connection "github.com/rhythin/bookspot/auth-service/internal/connection/postgres"
 	"github.com/rhythin/bookspot/auth-service/internal/handler/rest"
@@ -52,9 +53,11 @@ func main() {
 	}
 	defer sqldb.Close()
 
+	validator := validator.New()
+
 	// initilize the model, service and handler layers
 	model := model.New(DB)
-	service := service.New(model)
+	service := service.New(model, validator)
 	handler := rest.New(service)
 
 	// initialize the router
