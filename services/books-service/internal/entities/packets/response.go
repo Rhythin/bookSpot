@@ -5,7 +5,7 @@ type BookDetails struct {
 	Title        string `json:"title" gorm:"column:title"`
 	Author       string `json:"author" gorm:"column:author"`
 	Description  string `json:"description" gorm:"column:description"`
-	ChapterCount int    `json:"chapterCount" gorm:"column:chapter_count"`
+	ChapterCount int64  `json:"chapterCount" gorm:"column:chapter_count"`
 }
 
 type ListBooksResponse struct {
@@ -25,8 +25,9 @@ type ListChaptersResponse struct {
 }
 
 type ReadingListEntryDetails struct {
-	BookID          string `json:"bookId" gorm:"column:book_id"`
-	LastReadChapter int    `json:"lastReadChapter" gorm:"column:last_read_chapter"`
+	BookID          string `json:"bookID" gorm:"column:book_id"`
+	LastReadChapter string `json:"lastReadChapter" gorm:"column:last_read_chapter"`
+	ChapterCount    int64  `json:"chapterCount" gorm:"-"`
 }
 
 type ListReadingListResponse struct {

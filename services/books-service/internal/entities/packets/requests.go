@@ -7,7 +7,7 @@ type GetBooksRequest struct {
 }
 
 type GetChapterListRequest struct {
-	BookID string `json:"book_id"`
+	BookID string `json:"bookId"`
 	Limit  int    `json:"limit"`
 	Offset int    `json:"offset"`
 	Search string `json:"search"`
@@ -17,5 +17,5 @@ type GetReadingListRequest struct {
 	Limit  int    `json:"limit"`
 	Offset int    `json:"offset"`
 	Search string `json:"search"`
-	UserID string `json:"user_id"`
+	UserID string `json:"userId"`
 }

@@ -72,6 +72,6 @@ func (s *service) DeleteChapter(ctx context.Context, bookID string, chapterID st
 }
 
 func (s *service) GetChapterList(ctx context.Context, req *packets.GetChapterListRequest) (resp *packets.ListChaptersResponse, err error) {
-	resp = &packets.ListChaptersResponse{}
-	return resp, nil
+
+	return s.Model.Chapter.GetChapterList(ctx, req)
 }

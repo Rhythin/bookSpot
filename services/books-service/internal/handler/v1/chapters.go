@@ -57,18 +57,21 @@ func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error
 		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
 	}
 
-	limit := chi.URLParam(r, "limit")
-	offset := chi.URLParam(r, "offset")
-	search := chi.URLParam(r, "search")
+	limit := r.URL.Query().Get("limit")
+	offset := r.URL.Query().Get("offset")
+	search := r.URL.Query().Get("search")
 
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
-		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid limit", false)
+		customlogger.S().Warnw("failed to convert limit to int", "Error", err)
+		customlogger.S().Info("using default limit", "Limit", 10)
+		limitInt = 10
 	}
 
 	offsetInt, err := strconv.Atoi(offset)
 	if err != nil {
-		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid offset", false)
+		customlogger.S().Warnw("failed to convert offset to int", "Error", err)
+		customlogger.S().Info("using default offset", "Offset", 0)
 	}
 
 	req := &packets.GetChapterListRequest{

@@ -13,25 +13,25 @@ func NewRouter(handler v1.HandlerV1) chi.Router {
 	r.Route("/book", func(r chi.Router) {
 		r.Post("/", eh(handler.CreateBook))
 		r.Get("/", eh(handler.GetBooks)) // query params: limit, offset, search
-		r.Get("/{book_id}", eh(handler.GetBookByID))
-		r.Put("/{book_id}", eh(handler.UpdateBook))
-		r.Delete("/{book_id}", eh(handler.DeleteBook))
+		r.Get("/{bookID}", eh(handler.GetBookByID))
+		r.Put("/{bookID}", eh(handler.UpdateBook))
+		r.Delete("/{bookID}", eh(handler.DeleteBook))
 
 		// Nested chapters route under book
-		r.Route("/{book_id}/chapters", func(r chi.Router) {
+		r.Route("/{bookID}/chapters", func(r chi.Router) {
 			r.Post("/", eh(handler.AddChapter))
 			r.Get("/", eh(handler.GetChapterList)) // query params: limit, offset, search
-			r.Get("/{chapter_id}", eh(handler.GetChapterByID))
-			r.Put("/{chapter_id}", eh(handler.UpdateChapter))
-			r.Delete("/{chapter_id}", eh(handler.DeleteChapter))
+			r.Get("/{chapterID}", eh(handler.GetChapterByID))
+			r.Put("/{chapterID}", eh(handler.UpdateChapter))
+			r.Delete("/{chapterID}", eh(handler.DeleteChapter))
 		})
 	})
 
-	r.Route("/reading-list", func(r chi.Router) {
-		r.Post("/{book_id}", eh(handler.AddToReadingList))
-		r.Delete("/{book_id}", eh(handler.RemoveFromReadingList))
-		r.Get("/", eh(handler.GetReadingList)) // query params: limit, offset, search
-		r.Patch("/{book_id}", eh(handler.UpdateLastReadChapter))
+	r.Route("/readingList", func(r chi.Router) {
+		r.Post("/", eh(handler.AddToReadingList)) // url params: bookID, chapterID
+		r.Delete("/{listEntryID}", eh(handler.RemoveFromReadingList))
+		r.Get("/", eh(handler.GetReadingList))                       // query params: limit, offset, search
+		r.Patch("/{listEntryID}", eh(handler.UpdateLastReadChapter)) // url params: listEntryID
 	})
 
 	return r

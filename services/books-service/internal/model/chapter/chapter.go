@@ -24,15 +24,18 @@ func (c *chapter) AddChapter(ctx context.Context, chapter *entities.Chapter) err
 	return nil
 }
 
-func (c *chapter) GetChapterList(ctx context.Context, req *packets.GetChapterListRequest) ([]*entities.Chapter, error) {
-	var chapters []*entities.Chapter
+func (c *chapter) GetChapterList(ctx context.Context, req *packets.GetChapterListRequest) (resp *packets.ListChaptersResponse, err error) {
+	var chapters []*packets.ChapterDetails
+	var totalCount, searchCount int64
 
-	err := c.db.WithContext(ctx).
+	err = c.db.WithContext(ctx).
+		Where("book_id = ?", req.BookID).
+		Count(&totalCount).
+		Where("name LIKE ?", "%"+req.Search+"%").
 		Limit(req.Limit).
 		Offset(req.Offset).
-		Where("book_id = ?", req.BookID).
-		Where("name LIKE ?", "%"+req.Search+"%").
 		Find(&chapters).
+		Count(&searchCount).
 		Error
 
 	if err != nil {
@@ -40,7 +43,11 @@ func (c *chapter) GetChapterList(ctx context.Context, req *packets.GetChapterLis
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get chapter list", false)
 	}
 
-	return chapters, nil
+	return &packets.ListChaptersResponse{
+		Chapters:    chapters,
+		TotalCount:  totalCount,
+		SearchCount: searchCount,
+	}, nil
 }
 
 func (c *chapter) GetChapterByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error) {
@@ -91,8 +98,8 @@ func (c *chapter) DeleteChapter(ctx context.Context, bookID string, chapterID st
 	return nil
 }
 
-func (c *chapter) GetChapterCount(ctx context.Context, bookIDs []string) (map[string]int, error) {
-	var chapterCount map[string]int
+func (c *chapter) GetChapterCount(ctx context.Context, bookIDs []string) (map[string]int64, error) {
+	var chapterCount map[string]int64
 
 	err := c.db.WithContext(ctx).
 		Select("book_id, COUNT(*) as count").

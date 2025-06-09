@@ -40,8 +40,8 @@ type Service interface {
 	DeleteChapter(ctx context.Context, bookID string, chapterID string) error
 
 	// reading list
-	AddToReadingList(ctx context.Context, bookID string) error
-	RemoveFromReadingList(ctx context.Context, bookID string) error
-	GetReadingList(ctx context.Context, req *packets.GetReadingListRequest) (*packets.ListBooksResponse, error)
-	UpdateLastReadChapter(ctx context.Context, bookID string, chapterID string) error
+	AddToReadingList(ctx context.Context, entry *entities.ReadingListEntry) error
+	RemoveFromReadingList(ctx context.Context, entry *entities.ReadingListEntry) error
+	GetReadingList(ctx context.Context, req *packets.GetReadingListRequest) (*packets.ListReadingListResponse, error)
+	UpdateLastReadChapter(ctx context.Context, entry *entities.ReadingListEntry) error
 }

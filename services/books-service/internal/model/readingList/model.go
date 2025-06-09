@@ -9,10 +9,12 @@ import (
 )
 
 type ReadingList interface {
-	AddToReadingList(ctx context.Context, bookID string) error
-	RemoveFromReadingList(ctx context.Context, bookID string) error
-	GetReadingList(ctx context.Context, req *packets.GetReadingListRequest) ([]*entities.ReadingListEntry, error)
-	UpdateLastReadChapter(ctx context.Context, bookID string, chapterID string) error
+	Add(ctx context.Context, entry *entities.ReadingListEntry) error
+	Remove(ctx context.Context, entry *entities.ReadingListEntry) error
+	GetByID(ctx context.Context, entry *entities.ReadingListEntry) (*entities.ReadingListEntry, error)
+	GetDuplicate(ctx context.Context, entry *entities.ReadingListEntry) (*entities.ReadingListEntry, error)
+	UpdateLastReadChapter(ctx context.Context, entry *entities.ReadingListEntry) error
+	GetReadingList(ctx context.Context, req *packets.GetReadingListRequest) (*packets.ListReadingListResponse, error)
 }
 
 type readingList struct {
