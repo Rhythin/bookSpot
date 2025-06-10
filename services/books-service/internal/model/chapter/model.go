@@ -9,12 +9,12 @@ import (
 )
 
 type Chapter interface {
-	AddChapter(ctx context.Context, chapter *entities.Chapter) error
-	GetChapterList(ctx context.Context, req *packets.GetChapterListRequest) (*packets.ListChaptersResponse, error)
-	GetChapterByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error)
-	UpdateChapter(ctx context.Context, chapter *entities.Chapter) error
-	DeleteChapter(ctx context.Context, bookID, chapterID string) error
-	GetChapterCount(ctx context.Context, bookIDs []string) (map[string]int64, error)
+	Add(ctx context.Context, chapter *entities.Chapter) error
+	GetList(ctx context.Context, req *packets.GetChapterListRequest) (*packets.ListChaptersResponse, error)
+	GetByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error)
+	Update(ctx context.Context, chapter *entities.Chapter) error
+	Delete(ctx context.Context, bookID, chapterID string) error
+	GetCount(ctx context.Context, bookIDs []string) (map[string]int64, error)
 }
 
 type chapter struct {

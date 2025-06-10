@@ -22,7 +22,7 @@ func (s *service) AddChapter(ctx context.Context, chapter *entities.Chapter) (er
 		return errhandler.NewCustomError(errors.New("book not found"), http.StatusNotFound, "Book not found", false)
 	}
 
-	return s.Model.Chapter.AddChapter(ctx, chapter)
+	return s.Model.Chapter.Add(ctx, chapter)
 }
 
 func (s *service) GetChapterByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error) {
@@ -37,7 +37,7 @@ func (s *service) GetChapterByID(ctx context.Context, bookID string, chapterID s
 		return nil, errhandler.NewCustomError(errors.New("book not found"), http.StatusNotFound, "Book not found", false)
 	}
 
-	return s.Model.Chapter.GetChapterByID(ctx, bookID, chapterID)
+	return s.Model.Chapter.GetByID(ctx, bookID, chapterID)
 }
 
 func (s *service) UpdateChapter(ctx context.Context, chapter *entities.Chapter) (err error) {
@@ -52,7 +52,7 @@ func (s *service) UpdateChapter(ctx context.Context, chapter *entities.Chapter) 
 		return errhandler.NewCustomError(errors.New("chapter not found"), http.StatusNotFound, "Chapter not found", false)
 	}
 
-	return s.Model.Chapter.UpdateChapter(ctx, chapter)
+	return s.Model.Chapter.Update(ctx, chapter)
 }
 
 func (s *service) DeleteChapter(ctx context.Context, bookID string, chapterID string) (err error) {
@@ -68,10 +68,10 @@ func (s *service) DeleteChapter(ctx context.Context, bookID string, chapterID st
 		return errhandler.NewCustomError(errors.New("chapter not found"), http.StatusNotFound, "Chapter not found", false)
 	}
 
-	return s.Model.Chapter.DeleteChapter(ctx, bookID, chapterID)
+	return s.Model.Chapter.Delete(ctx, bookID, chapterID)
 }
 
 func (s *service) GetChapterList(ctx context.Context, req *packets.GetChapterListRequest) (resp *packets.ListChaptersResponse, err error) {
 
-	return s.Model.Chapter.GetChapterList(ctx, req)
+	return s.Model.Chapter.GetList(ctx, req)
 }

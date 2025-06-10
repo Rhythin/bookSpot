@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (b *book) CreateBook(ctx context.Context, book *entities.Book) (err error) {
+func (b *book) Create(ctx context.Context, book *entities.Book) (err error) {
 
 	err = b.db.WithContext(ctx).
 		Create(book).
@@ -26,7 +26,7 @@ func (b *book) CreateBook(ctx context.Context, book *entities.Book) (err error) 
 	return nil
 }
 
-func (b *book) UpdateBook(ctx context.Context, bookID string, book *entities.Book) (err error) {
+func (b *book) Update(ctx context.Context, bookID string, book *entities.Book) (err error) {
 
 	err = b.db.WithContext(ctx).
 		Where("id = ?", bookID).
@@ -41,7 +41,7 @@ func (b *book) UpdateBook(ctx context.Context, bookID string, book *entities.Boo
 	return nil
 }
 
-func (b *book) DeleteBook(ctx context.Context, bookID string) (err error) {
+func (b *book) Delete(ctx context.Context, bookID string) (err error) {
 
 	err = b.db.WithContext(ctx).
 		Where("id = ?", bookID).
@@ -56,7 +56,7 @@ func (b *book) DeleteBook(ctx context.Context, bookID string) (err error) {
 	return nil
 }
 
-func (b *book) GetBooks(ctx context.Context, req *packets.GetBooksRequest) (resp *packets.ListBooksResponse, err error) {
+func (b *book) GetList(ctx context.Context, req *packets.GetBooksRequest) (resp *packets.ListBooksResponse, err error) {
 	resp = &packets.ListBooksResponse{}
 	var books []*packets.BookDetails
 
@@ -83,7 +83,7 @@ func (b *book) GetBooks(ctx context.Context, req *packets.GetBooksRequest) (resp
 	return resp, nil
 }
 
-func (b *book) GetBookByID(ctx context.Context, bookID string) (*entities.Book, error) {
+func (b *book) GetByID(ctx context.Context, bookID string) (*entities.Book, error) {
 	var book *entities.Book
 
 	err := b.db.WithContext(ctx).

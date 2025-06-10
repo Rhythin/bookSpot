@@ -9,11 +9,11 @@ import (
 )
 
 type Book interface {
-	CreateBook(ctx context.Context, book *entities.Book) (err error)
-	UpdateBook(ctx context.Context, bookID string, book *entities.Book) (err error)
-	DeleteBook(ctx context.Context, bookID string) (err error)
-	GetBooks(ctx context.Context, req *packets.GetBooksRequest) (*packets.ListBooksResponse, error)
-	GetBookByID(ctx context.Context, bookID string) (*entities.Book, error)
+	Create(ctx context.Context, book *entities.Book) (err error)
+	Update(ctx context.Context, bookID string, book *entities.Book) (err error)
+	Delete(ctx context.Context, bookID string) (err error)
+	GetList(ctx context.Context, req *packets.GetBooksRequest) (*packets.ListBooksResponse, error)
+	GetByID(ctx context.Context, bookID string) (*entities.Book, error)
 }
 
 type book struct {

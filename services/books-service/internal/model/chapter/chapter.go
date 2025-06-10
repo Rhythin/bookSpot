@@ -10,7 +10,7 @@ import (
 	"github.com/rhythin/bookspot/services/shared/errhandler"
 )
 
-func (c *chapter) AddChapter(ctx context.Context, chapter *entities.Chapter) error {
+func (c *chapter) Add(ctx context.Context, chapter *entities.Chapter) error {
 
 	err := c.db.WithContext(ctx).
 		Create(chapter).
@@ -24,7 +24,7 @@ func (c *chapter) AddChapter(ctx context.Context, chapter *entities.Chapter) err
 	return nil
 }
 
-func (c *chapter) GetChapterList(ctx context.Context, req *packets.GetChapterListRequest) (resp *packets.ListChaptersResponse, err error) {
+func (c *chapter) GetList(ctx context.Context, req *packets.GetChapterListRequest) (resp *packets.ListChaptersResponse, err error) {
 	var chapters []*packets.ChapterDetails
 	var totalCount, searchCount int64
 
@@ -50,7 +50,7 @@ func (c *chapter) GetChapterList(ctx context.Context, req *packets.GetChapterLis
 	}, nil
 }
 
-func (c *chapter) GetChapterByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error) {
+func (c *chapter) GetByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error) {
 	var chapter *entities.Chapter
 
 	err := c.db.WithContext(ctx).
@@ -67,7 +67,7 @@ func (c *chapter) GetChapterByID(ctx context.Context, bookID string, chapterID s
 	return chapter, nil
 }
 
-func (c *chapter) UpdateChapter(ctx context.Context, chapter *entities.Chapter) error {
+func (c *chapter) Update(ctx context.Context, chapter *entities.Chapter) error {
 
 	err := c.db.WithContext(ctx).
 		Where("id = ?", chapter.ID).
@@ -82,7 +82,7 @@ func (c *chapter) UpdateChapter(ctx context.Context, chapter *entities.Chapter) 
 	return nil
 }
 
-func (c *chapter) DeleteChapter(ctx context.Context, bookID string, chapterID string) error {
+func (c *chapter) Delete(ctx context.Context, bookID string, chapterID string) error {
 
 	err := c.db.WithContext(ctx).
 		Where("book_id = ?", bookID).
@@ -98,7 +98,7 @@ func (c *chapter) DeleteChapter(ctx context.Context, bookID string, chapterID st
 	return nil
 }
 
-func (c *chapter) GetChapterCount(ctx context.Context, bookIDs []string) (map[string]int64, error) {
+func (c *chapter) GetCount(ctx context.Context, bookIDs []string) (map[string]int64, error) {
 	var chapterCount map[string]int64
 
 	err := c.db.WithContext(ctx).

@@ -72,7 +72,7 @@ func (s *service) GetReadingList(ctx context.Context, req *packets.GetReadingLis
 		bookIDs[i] = entry.BookID
 	}
 
-	chapterCountMap, err := s.Model.Chapter.GetChapterCount(ctx, bookIDs)
+	chapterCountMap, err := s.Model.Chapter.GetCount(ctx, bookIDs)
 	if err != nil {
 		return nil, err
 	}

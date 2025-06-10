@@ -12,11 +12,11 @@ import (
 
 func (s *service) CreateBook(ctx context.Context, book *entities.Book) (err error) {
 
-	return s.Model.Book.CreateBook(ctx, book)
+	return s.Model.Book.Create(ctx, book)
 }
 
 func (s *service) GetBookByID(ctx context.Context, bookID string) (*entities.Book, error) {
-	return s.Model.Book.GetBookByID(ctx, bookID)
+	return s.Model.Book.GetByID(ctx, bookID)
 }
 
 func (s *service) UpdateBook(ctx context.Context, bookID string, book *entities.Book) (err error) {
@@ -31,7 +31,7 @@ func (s *service) UpdateBook(ctx context.Context, bookID string, book *entities.
 		return errhandler.NewCustomError(errors.New("book not found"), http.StatusNotFound, "Book not found", false)
 	}
 
-	return s.Model.Book.UpdateBook(ctx, bookID, book)
+	return s.Model.Book.Update(ctx, bookID, book)
 }
 
 func (s *service) DeleteBook(ctx context.Context, bookID string) (err error) {
@@ -46,12 +46,12 @@ func (s *service) DeleteBook(ctx context.Context, bookID string) (err error) {
 		return errhandler.NewCustomError(errors.New("book not found"), http.StatusNotFound, "Book not found", false)
 	}
 
-	return s.Model.Book.DeleteBook(ctx, bookID)
+	return s.Model.Book.Delete(ctx, bookID)
 }
 
 func (s *service) GetBooks(ctx context.Context, req *packets.GetBooksRequest) (resp *packets.ListBooksResponse, err error) {
 
-	resp, err = s.Model.Book.GetBooks(ctx, req)
+	resp, err = s.Model.Book.GetList(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (s *service) GetBooks(ctx context.Context, req *packets.GetBooksRequest) (r
 	}
 
 	// get chapter count for each book
-	chapterCountMap, err := s.Model.Chapter.GetChapterCount(ctx, bookIDs)
+	chapterCountMap, err := s.Model.Chapter.GetCount(ctx, bookIDs)
 	if err != nil {
 		return nil, err
 	}
