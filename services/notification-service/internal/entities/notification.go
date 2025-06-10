@@ -4,9 +4,8 @@ import "github.com/rhythin/bookspot/services/shared/custommodel"
 
 type Notification struct {
 	custommodel.CustomModel
-	UserID    string
-	BookID    string
-	ChapterID string
-	Message   string
-	IsRead    bool
+	UserID  string `json:"userID"`
+	Title   string `json:"title"`
+	Message string `json:"message"`
+	IsRead  bool   `json:"isRead"`
 }

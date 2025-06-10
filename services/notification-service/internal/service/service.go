@@ -29,4 +29,7 @@ type Service interface {
 	GetUnreadCount(ctx context.Context, userID string) (int64, error)
 	MarkAsRead(ctx context.Context, notificationID string) error
 	MarkAllAsRead(ctx context.Context, userID string) error
+
+	// kafka
+	CreateNotification(ctx context.Context, notification *packets.CreateNotificationDetails) error
 }

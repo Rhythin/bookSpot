@@ -3,6 +3,7 @@ package notification
 import (
 	"context"
 
+	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
 	"gorm.io/gorm"
 )
@@ -20,4 +21,5 @@ type Notification interface {
 	GetUnreadCount(ctx context.Context, userID string) (int64, error)
 	MarkAsRead(ctx context.Context, notificationID string) error
 	MarkAllAsRead(ctx context.Context, userID string) error
+	CreateNotification(ctx context.Context, notifications []*entities.Notification) error
 }

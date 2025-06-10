@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
 )
 
@@ -20,4 +22,21 @@ func (s *service) MarkAsRead(ctx context.Context, notificationID string) (err er
 
 func (s *service) MarkAllAsRead(ctx context.Context, userID string) (err error) {
 	return s.Model.Notification.MarkAllAsRead(ctx, userID)
+}
+
+func (s *service) CreateNotification(ctx context.Context, notification *packets.CreateNotificationDetails) (err error) {
+
+	var notifications []*entities.Notification
+
+	for _, userID := range notification.UserIDs {
+
+		notifications = append(notifications, &entities.Notification{
+			UserID:  userID,
+			IsRead:  false,
+			Title:   fmt.Sprintf("New chapter for %s", notification.BookTitle),
+			Message: fmt.Sprintf("Chapter %d: \"%s\" is now available!", notification.ChapterNumber, notification.ChapterTitle),
+		})
+	}
+
+	return s.Model.Notification.CreateNotification(ctx, notifications)
 }

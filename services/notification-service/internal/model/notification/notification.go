@@ -3,6 +3,7 @@ package notification
 import (
 	"context"
 
+	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 )
@@ -56,6 +57,18 @@ func (n *notification) MarkAllAsRead(ctx context.Context, userID string) (err er
 		Error
 	if err != nil {
 		customlogger.S().Warnw("failed to mark all notifications as read for user", "userID", userID, "error", err)
+		return err
+	}
+
+	return nil
+}
+
+func (n *notification) CreateNotification(ctx context.Context, notifications []*entities.Notification) (err error) {
+
+	err = n.db.WithContext(ctx).
+		Create(&notifications).Error
+	if err != nil {
+		customlogger.S().Warnw("failed to create notification", "error", err)
 		return err
 	}
 

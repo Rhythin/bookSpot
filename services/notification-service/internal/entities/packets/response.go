@@ -4,8 +4,7 @@ import "time"
 
 type NotificationDetails struct {
 	ID        string    `json:"id"`
-	BookID    string    `json:"bookID"`
-	ChapterID string    `json:"chapterID"`
+	Title     string    `json:"title"`
 	Message   string    `json:"message"`
 	IsRead    bool      `json:"isRead"`
 	CreatedAt time.Time `json:"createdAt" gorm:"column:created_at"`
