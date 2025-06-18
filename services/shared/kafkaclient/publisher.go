@@ -40,14 +40,6 @@ func NewPublisher(topic Topic, group string) Publisher {
 
 func (p *Publisher) Publish(ctx context.Context, message any) {
 
-	// create a producer from the client
-	producer, err := sarama.NewSyncProducerFromClient(client)
-	if err != nil {
-		customlogger.S().Errorw("failed to create producer", "Error", err)
-		return
-	}
-	defer producer.Close()
-
 	// convert the message to json
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
@@ -55,14 +47,27 @@ func (p *Publisher) Publish(ctx context.Context, message any) {
 		return
 	}
 
-	// send the message to the topic
-	_, _, err = producer.SendMessage(&sarama.ProducerMessage{
+	// prepare the message
+	msg := &sarama.ProducerMessage{
 		Topic: string(p.Topic),
 		Value: sarama.ByteEncoder(jsonMessage),
-	})
-	if err != nil {
-		customlogger.S().Errorw("failed to send message", "Error", err)
-		return
+		Key:   sarama.StringEncoder(p.Group),
+	}
+
+	// send the message to the topic and wait for response
+	select {
+	case publisher.Input() <- msg:
+		customlogger.S().Infof("Message request sent to topic cluster '%s'\n", p.Topic)
+	case err := <-publisher.Errors():
+		customlogger.S().Errorw("failed to produce message", "Error", err)
+	}
+
+	// 	wait for success or error acknowledgment from the cluster
+	select {
+	case <-publisher.Successes():
+		customlogger.S().Infof("Message was successfully produced to topic '%s'", p.Topic)
+	case err := <-publisher.Errors():
+		customlogger.S().Errorw("Failed to produce message", "Error", err)
 	}
 
 }
