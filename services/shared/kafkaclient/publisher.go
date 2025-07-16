@@ -13,7 +13,7 @@ type Publisher struct {
 	Group string
 }
 
-func RegisterPublishers(publishers ...Publisher) {
+func RegisterPublisherTopics(publishers ...Publisher) {
 
 	for _, publisher := range publishers {
 		// check if topic exists in the if not create it
