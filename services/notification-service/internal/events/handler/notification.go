@@ -7,9 +7,11 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
+	"github.com/rhythin/bookspot/services/shared/customlogger"
+	"github.com/rhythin/bookspot/services/shared/errhandler"
 )
 
-func (h *handler) SendNotification(ctx context.Context, headers map[string]string, message *sarama.ConsumerMessage) error {
+func (h *eventHandler) SendNotification(ctx context.Context, headers map[string]string, message *sarama.ConsumerMessage) error {
 
 	var req packets.CreateNotificationDetails
 
