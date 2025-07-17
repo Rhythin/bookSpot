@@ -1,0 +1,8 @@
+go 1.24.3
+
+use (
+	./services/auth-service
+	./services/books-service
+	./services/notification-service
+	./services/shared
+)
