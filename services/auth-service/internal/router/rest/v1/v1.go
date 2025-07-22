@@ -13,6 +13,18 @@ func NewRouter(handler rest.Handler) chi.Router {
 	r.Route("/user", func(r chi.Router) {
 		r.Post("/register", eh(handler.Register))
 		r.Post("/login", eh(handler.Login))
+		r.Post("/logout", eh(handler.Logout))
+		r.Get("/", eh(handler.GetUsers))
+		r.Get("/{userID}", eh(handler.GetUser))
+		r.Put("/{userID}", eh(handler.UpdateUser))
+		r.Delete("/{userID}", eh(handler.DeleteUser))
+		r.Post("/reset-password", eh(handler.ResetPassword))
+	})
+
+	r.Route("/token", func(r chi.Router) {
+		r.Get("/", eh(handler.GetToken)) // query params: tempToken
+		r.Post("/revoke", eh(handler.RevokeToken))
+		r.Post("/refresh", eh(handler.RefreshToken))
 	})
 
 	return r
