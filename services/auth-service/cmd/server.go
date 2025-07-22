@@ -58,7 +58,7 @@ func main() {
 	// initilize the model, service and handler layers
 	model := model.New(DB)
 	service := service.New(model, validator)
-	handler := rest.New(service)
+	handler := rest.New(service, validator)
 
 	// initialize the router
 	r := router.NewRouter(handler)

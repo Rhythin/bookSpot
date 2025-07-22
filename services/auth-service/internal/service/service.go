@@ -25,7 +25,7 @@ type Service interface {
 	Login(ctx context.Context, request *packets.LoginRequest) (*packets.TokenResponse, error)
 	GetUsers(ctx context.Context, request *packets.ListUsersRequest) (*packets.ListUsersResponse, error)
 	GetUser(ctx context.Context, userID string) (user *packets.UserDetails, err error)
-	UpdateUser(ctx context.Context, userID string, request *packets.UpdateUserRequest) error
+	UpdateUser(ctx context.Context, request *packets.UpdateUserRequest) error
 	DeleteUser(ctx context.Context, userID string) error
 	ForgotPassword(ctx context.Context, request *packets.ForgotPasswordRequest) error
 	ResetPassword(ctx context.Context, request *packets.ResetPasswordRequest) error

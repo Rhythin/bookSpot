@@ -2,10 +2,8 @@ package rest
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
@@ -18,13 +16,12 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) (err error)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	userID := chi.URLParam(r, "userID")
-	if userID == "" {
-		customlogger.S().Warnw("userID is required", "userID", userID)
-		return errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
+	if err := h.validator.Struct(req); err != nil {
+		customlogger.S().Warnw("failed to validate request", "error", err)
+		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	if err := h.service.UpdateUser(r.Context(), userID, &req); err != nil {
+	if err := h.service.UpdateUser(r.Context(), &req); err != nil {
 		return err
 	}
 

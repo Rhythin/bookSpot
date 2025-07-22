@@ -6,6 +6,7 @@ type RegisterRequest struct {
 	Password  string `json:"password"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
+	IsAdmin   bool   `json:"isAdmin"`
 }
 
 type LoginRequest struct {
@@ -14,6 +15,7 @@ type LoginRequest struct {
 }
 
 type UpdateUserRequest struct {
+	UserID    string `json:"userID" validate:"required"`
 	Email     string `json:"email,omitempty" validate:"required,email"`
 	FirstName string `json:"firstName,omitempty" validate:"required"`
 	LastName  string `json:"lastName,omitempty"`
