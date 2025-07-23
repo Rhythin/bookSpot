@@ -21,8 +21,8 @@ func New(model model.Model, validator *validator.Validate) Service {
 }
 
 type Service interface {
-	CreateUser(ctx context.Context, request *packets.RegisterRequest) error
-	Login(ctx context.Context, request *packets.LoginRequest) (*packets.TokenResponse, error)
+	CreateUser(ctx context.Context, request *packets.RegisterRequest) (string, error)
+	Login(ctx context.Context, request *packets.LoginRequest) (string, error)
 	GetUsers(ctx context.Context, request *packets.ListUsersRequest) (*packets.ListUsersResponse, error)
 	GetUser(ctx context.Context, userID string) (user *packets.UserDetails, err error)
 	UpdateUser(ctx context.Context, request *packets.UpdateUserRequest) error
