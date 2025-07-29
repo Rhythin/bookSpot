@@ -36,7 +36,7 @@ type ResetPasswordRequest struct {
 }
 
 type ListUsersRequest struct {
-	Limit  string `json:"limit"`
-	Offset string `json:"offset"`
+	Limit  int    `json:"limit"`
+	Offset int    `json:"offset"`
 	Search string `json:"search"`
 }

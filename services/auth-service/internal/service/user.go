@@ -15,7 +15,7 @@ import (
 func (s *service) CreateUser(ctx context.Context, request *packets.RegisterRequest) (string, error) {
 
 	// checkexisting user by email or username
-	user, err := s.Model.User.CheckUserExists(ctx, request.Email, request.Username, "")
+	user, err := s.Model.User.CheckUserExists(ctx, request.Email, request.Username)
 	if err != nil {
 		return "", err
 	}
@@ -99,8 +99,22 @@ func (s *service) GetUsers(ctx context.Context, request *packets.ListUsersReques
 	return s.Model.User.GetUsers(ctx, request)
 }
 
-func (s *service) GetUser(ctx context.Context, userID string) (user *packets.UserDetails, err error) {
-	return s.Model.User.GetUser(ctx, userID)
+func (s *service) GetUser(ctx context.Context, userID string) (UserDetails *packets.UserDetails, err error) {
+	user, err := s.Model.User.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &packets.UserDetails{
+		ID:            user.ID,
+		Username:      user.Username,
+		Email:         user.Email,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		IsAdmin:       user.IsAdmin,
+		IsLocked:      user.IsLocked,
+		LoginAttempts: user.LoginAttempts,
+		CreatedAt:     user.CreatedAt,
+	}, nil
 }
 
 // helper function to generate a salt string for password

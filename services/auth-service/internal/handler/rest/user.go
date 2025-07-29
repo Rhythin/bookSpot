@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
@@ -18,12 +19,14 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	if err := h.service.CreateUser(r.Context(), &req); err != nil {
+	tempToken, err := h.service.CreateUser(r.Context(), &req)
+	if err != nil {
 		return err
 	}
 
 	messages := map[string]interface{}{
-		"message": "User registered successfully",
+		"message":   "User registered successfully",
+		"tempToken": tempToken,
 	}
 
 	return sendResponse(w, messages, http.StatusCreated)
@@ -36,12 +39,12 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) (err error) {
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	resp, err := h.service.Login(r.Context(), &req)
+	tempToken, err := h.service.Login(r.Context(), &req)
 	if err != nil {
 		return err
 	}
 
-	return sendResponse(w, resp, http.StatusOK)
+	return sendResponse(w, tempToken, http.StatusOK)
 }
 
 func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
@@ -49,9 +52,22 @@ func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
 	offset := r.URL.Query().Get("offset")
 	search := r.URL.Query().Get("search")
 
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		customlogger.S().Warnw("failed to convert limit to int", "Error", err)
+		customlogger.S().Info("using default limit", "Limit", 10)
+		limitInt = 10
+	}
+
+	offsetInt, err := strconv.Atoi(offset)
+	if err != nil {
+		customlogger.S().Warnw("failed to convert offset to int", "Error", err)
+		customlogger.S().Info("using default offset", "Offset", 0)
+	}
+
 	req := packets.ListUsersRequest{
-		Limit:  limit,
-		Offset: offset,
+		Limit:  limitInt,
+		Offset: offsetInt,
 		Search: search,
 	}
 

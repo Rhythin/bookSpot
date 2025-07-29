@@ -3,8 +3,9 @@ package packets
 import "time"
 
 type ListUsersResponse struct {
-	Users []*UserDetails `json:"users"`
-	Total int            `json:"total"`
+	Users       []*UserDetails `json:"users"`
+	TotalCount  int64          `json:"totalCount"`
+	SearchCount int64          `json:"searchCount"`
 }
 
 type UserDetails struct {
