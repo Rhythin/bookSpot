@@ -78,6 +78,16 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		customlogger.S().Warnw("invalid password", "Error", err)
+
+		// update login attempts
+		user.LoginAttempts++
+		if user.LoginAttempts >= 5 {
+			user.IsLocked = true
+		}
+		err = s.Model.User.UpdateUser(ctx, user)
+		if err != nil {
+			return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update user", false)
+		}
 		return "", errhandler.NewCustomError(err, http.StatusUnauthorized, "Invalid password", false)
 	}
 
