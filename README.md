@@ -88,12 +88,12 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 - [x] **Database Models** - Complete entity definitions and relationships
 - [x] **HTTP Handlers** - RESTful API endpoints for all services
 - [x] **Error Handling** - Comprehensive error handling and logging
+- [x] **Docker Configuration** - Dockerfiles and docker-compose.yml
 
 ### 🔄 In Progress
 - [ ] **gRPC Communication** - Inter-service communication implementation
-- [ ] **Docker Configuration** - Dockerfiles and docker-compose.yml
+
 - [ ] **Kubernetes Manifests** - K8s deployment configurations
-- [ ] **Database Migrations** - Automated database schema management
 - [ ] **API Gateway** - Centralized API routing and rate limiting
 
 ### 📅 Future Enhancements
