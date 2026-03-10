@@ -6,25 +6,66 @@ import (
 
 	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func (s *service) GetNotifications(ctx context.Context, userID string) (result []*packets.NotificationDetails, err error) {
-	return s.Model.Notification.GetNotifications(ctx, userID)
+	tr := otel.Tracer("notification-service")
+	ctx, span := tr.Start(ctx, "GetNotifications")
+	defer span.End()
+
+	result, err = s.Model.Notification.GetNotifications(ctx, userID)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return result, err
 }
 
 func (s *service) GetUnreadCount(ctx context.Context, userID string) (count int64, err error) {
-	return s.Model.Notification.GetUnreadCount(ctx, userID)
+	tr := otel.Tracer("notification-service")
+	ctx, span := tr.Start(ctx, "GetUnreadCount")
+	defer span.End()
+
+	count, err = s.Model.Notification.GetUnreadCount(ctx, userID)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return count, err
 }
 
 func (s *service) MarkAsRead(ctx context.Context, notificationID string) (err error) {
-	return s.Model.Notification.MarkAsRead(ctx, notificationID)
+	tr := otel.Tracer("notification-service")
+	ctx, span := tr.Start(ctx, "MarkAsRead")
+	defer span.End()
+
+	err = s.Model.Notification.MarkAsRead(ctx, notificationID)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }
 
 func (s *service) MarkAllAsRead(ctx context.Context, userID string) (err error) {
-	return s.Model.Notification.MarkAllAsRead(ctx, userID)
+	tr := otel.Tracer("notification-service")
+	ctx, span := tr.Start(ctx, "MarkAllAsRead")
+	defer span.End()
+
+	err = s.Model.Notification.MarkAllAsRead(ctx, userID)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }
 
 func (s *service) CreateNotification(ctx context.Context, notification *packets.CreateNotificationDetails) (err error) {
+	tr := otel.Tracer("notification-service")
+	ctx, span := tr.Start(ctx, "CreateNotification")
+	defer span.End()
 
 	var notifications []*entities.Notification
 
@@ -38,5 +79,10 @@ func (s *service) CreateNotification(ctx context.Context, notification *packets.
 		})
 	}
 
-	return s.Model.Notification.CreateNotification(ctx, notifications)
+	err = s.Model.Notification.CreateNotification(ctx, notifications)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }

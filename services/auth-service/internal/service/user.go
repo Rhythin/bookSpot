@@ -11,14 +11,21 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *service) CreateUser(ctx context.Context, request *packets.RegisterRequest) (string, error) {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "CreateUser")
+	defer span.End()
 
 	// checkexisting user by email or username
 	user, err := s.Model.User.CheckUserExists(ctx, request.Email, request.Username)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 	if user != nil {
@@ -44,6 +51,8 @@ func (s *service) CreateUser(ctx context.Context, request *packets.RegisterReque
 	password := request.Password + salt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to hash password", "Error", err)
 		return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to hash password", false)
 	}
@@ -56,6 +65,8 @@ func (s *service) CreateUser(ctx context.Context, request *packets.RegisterReque
 	// create user
 	err = s.Model.User.CreateUser(ctx, newUser)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to create user", "Error", err)
 		return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to create user", false)
 	}
@@ -64,10 +75,15 @@ func (s *service) CreateUser(ctx context.Context, request *packets.RegisterReque
 }
 
 func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (string, error) {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "Login")
+	defer span.End()
 
 	// check existing user by email or username
 	user, err := s.Model.User.GetByUserName(ctx, request.Username)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 	if user == nil {
@@ -88,8 +104,13 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 		}
 		err = s.Model.User.UpdateUser(ctx, user)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update user", false)
 		}
+		err = errors.New("invalid password")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", errhandler.NewCustomError(err, http.StatusUnauthorized, "Invalid password", false)
 	}
 
@@ -99,6 +120,8 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 	// update user
 	err = s.Model.User.UpdateUser(ctx, user)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to update user", "Error", err)
 		return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update user", false)
 	}
@@ -107,13 +130,27 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 }
 
 func (s *service) GetUsers(ctx context.Context, request *packets.ListUsersRequest) (*packets.ListUsersResponse, error) {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "GetUsers")
+	defer span.End()
 
-	return s.Model.User.GetUsers(ctx, request)
+	res, err := s.Model.User.GetUsers(ctx, request)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return res, err
 }
 
 func (s *service) GetUser(ctx context.Context, userID string) (UserDetails *packets.UserDetails, err error) {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "GetUser")
+	defer span.End()
+
 	user, err := s.Model.User.GetUserByID(ctx, userID)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 	return &packets.UserDetails{

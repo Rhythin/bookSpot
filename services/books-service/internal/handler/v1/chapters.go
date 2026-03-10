@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,23 +11,35 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "AddChapter")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	if r.Body == http.NoBody {
-		return errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
+		err := errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	var chapter entities.Chapter
 	if err := json.NewDecoder(r.Body).Decode(&chapter); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to decode chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid body", false)
 	}
@@ -37,11 +48,15 @@ func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
 
 	// validate chapter
 	if err := h.Validator.Struct(chapter); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to validate chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid chapter", false)
 	}
 
 	if err := h.Service.AddChapter(ctx, &chapter); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -49,12 +64,16 @@ func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error {
-
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "GetChapterList")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	limit := r.URL.Query().Get("limit")
@@ -82,56 +101,79 @@ func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error
 	}
 
 	if err := h.Validator.Struct(req); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to validate request", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	chapters, err := h.Service.GetChapterList(ctx, req)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	return sendResponse(w, chapters, http.StatusOK)
 }
 
 func (h *handlerV1) GetChapterByID(w http.ResponseWriter, r *http.Request) error {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "GetChapterByID")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 	chapterID := chi.URLParam(r, "chapter_id")
 
 	if bookID == "" || chapterID == "" {
-		return errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
+		err := errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	chapter, err := h.Service.GetChapterByID(ctx, bookID, chapterID)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	return sendResponse(w, chapter, http.StatusOK)
 }
 
 func (h *handlerV1) UpdateChapter(w http.ResponseWriter, r *http.Request) error {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "UpdateChapter")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 	chapterID := chi.URLParam(r, "chapter_id")
 
 	if bookID == "" || chapterID == "" {
-		return errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
+		err := errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	if r.Body == http.NoBody {
-		return errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
+		err := errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	var chapter entities.Chapter
 	if err := json.NewDecoder(r.Body).Decode(&chapter); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to decode chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid body", false)
 	}
 
 	// validate chapter
 	if err := h.Validator.Struct(chapter); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to validate chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid chapter", false)
 	}
@@ -140,22 +182,31 @@ func (h *handlerV1) UpdateChapter(w http.ResponseWriter, r *http.Request) error 
 	chapter.ID = chapterID
 
 	if err := h.Service.UpdateChapter(ctx, &chapter); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	return sendResponse(w, chapter, http.StatusOK)
 }
 
 func (h *handlerV1) DeleteChapter(w http.ResponseWriter, r *http.Request) error {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "DeleteChapter")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 	chapterID := chi.URLParam(r, "chapter_id")
 
 	if bookID == "" || chapterID == "" {
-		return errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
+		err := errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	if err := h.Service.DeleteChapter(ctx, bookID, chapterID); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	return sendResponse(w, nil, http.StatusOK)

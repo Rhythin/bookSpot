@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,28 +11,41 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func (h *handlerV1) CreateBook(w http.ResponseWriter, r *http.Request) (err error) {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "CreateBook")
+	defer span.End()
 
 	if r.Body == http.NoBody {
-		return errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
+		err := errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	var book entities.Book
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to decode book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid body", false)
 	}
 
 	// validate book
 	if err := h.Validator.Struct(book); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to validate book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid book", false)
 	}
 
 	if err := h.Service.CreateBook(ctx, &book); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -41,16 +53,23 @@ func (h *handlerV1) CreateBook(w http.ResponseWriter, r *http.Request) (err erro
 }
 
 func (h *handlerV1) GetBookByID(w http.ResponseWriter, r *http.Request) (err error) {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "GetBookByID")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	book, err := h.Service.GetBookByID(ctx, bookID)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -58,27 +77,38 @@ func (h *handlerV1) GetBookByID(w http.ResponseWriter, r *http.Request) (err err
 }
 
 func (h *handlerV1) UpdateBook(w http.ResponseWriter, r *http.Request) (err error) {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "UpdateBook")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	var book entities.Book
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to decode book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid body", false)
 	}
 
 	// validate book
 	if err := h.Validator.Struct(book); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to validate book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid book", false)
 	}
 
 	if err := h.Service.UpdateBook(ctx, bookID, &book); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -86,15 +116,22 @@ func (h *handlerV1) UpdateBook(w http.ResponseWriter, r *http.Request) (err erro
 }
 
 func (h *handlerV1) DeleteBook(w http.ResponseWriter, r *http.Request) (err error) {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "DeleteBook")
+	defer span.End()
 
 	bookID := chi.URLParam(r, "book_id")
 
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	if err := h.Service.DeleteBook(ctx, bookID); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -102,7 +139,9 @@ func (h *handlerV1) DeleteBook(w http.ResponseWriter, r *http.Request) (err erro
 }
 
 func (h *handlerV1) GetBooks(w http.ResponseWriter, r *http.Request) (err error) {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "GetBooks")
+	defer span.End()
 
 	limit := r.URL.Query().Get("limit")
 	offset := r.URL.Query().Get("offset")
@@ -128,12 +167,16 @@ func (h *handlerV1) GetBooks(w http.ResponseWriter, r *http.Request) (err error)
 	}
 
 	if err := h.Validator.Struct(req); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to validate request", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	books, err := h.Service.GetBooks(ctx, req)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	return sendResponse(w, books, http.StatusOK)

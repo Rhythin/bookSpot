@@ -10,17 +10,27 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "Register")
+	defer span.End()
+
 	var req packets.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	tempToken, err := h.service.CreateUser(r.Context(), &req)
+	tempToken, err := h.service.CreateUser(ctx, &req)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -33,14 +43,22 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "Login")
+	defer span.End()
+
 	var req packets.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	tempToken, err := h.service.Login(r.Context(), &req)
+	tempToken, err := h.service.Login(ctx, &req)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -48,6 +66,10 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) (err error) {
 }
 
 func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "GetUsers")
+	defer span.End()
+
 	limit := r.URL.Query().Get("limit")
 	offset := r.URL.Query().Get("offset")
 	search := r.URL.Query().Get("search")
@@ -71,8 +93,10 @@ func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
 		Search: search,
 	}
 
-	users, err := h.service.GetUsers(r.Context(), &req)
+	users, err := h.service.GetUsers(ctx, &req)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -80,21 +104,35 @@ func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
 }
 
 func (h *handler) GetUser(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "GetUser")
+	defer span.End()
+
 	userID := chi.URLParam(r, "userID")
 	if userID == "" {
-		return errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
+		err := errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
-	user, err := h.service.GetUser(r.Context(), userID)
+	user, err := h.service.GetUser(ctx, userID)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	return sendResponse(w, user, http.StatusOK)
 }
 
 func (h *handler) Logout(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "Logout")
+	defer span.End()
 
-	if err := h.service.Logout(r.Context()); err != nil {
+	if err := h.service.Logout(ctx); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -106,12 +144,21 @@ func (h *handler) Logout(w http.ResponseWriter, r *http.Request) (err error) {
 }
 
 func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "DeleteUser")
+	defer span.End()
+
 	userID := chi.URLParam(r, "userID")
 	if userID == "" {
-		return errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
+		err := errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
-	if err := h.service.DeleteUser(r.Context(), userID); err != nil {
+	if err := h.service.DeleteUser(ctx, userID); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 

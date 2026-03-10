@@ -8,10 +8,15 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"gorm.io/gorm"
 )
 
 func (u *user) GetUserByID(ctx context.Context, userID string) (user *entities.User, err error) {
+	tr := otel.Tracer("auth-model")
+	ctx, span := tr.Start(ctx, "GetUserByID")
+	defer span.End()
 
 	err = u.db.WithContext(ctx).
 		First(&user, userID).
@@ -21,6 +26,8 @@ func (u *user) GetUserByID(ctx context.Context, userID string) (user *entities.U
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to get user by id", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get user by id", false)
 	}
@@ -29,6 +36,9 @@ func (u *user) GetUserByID(ctx context.Context, userID string) (user *entities.U
 }
 
 func (u *user) GetByUserName(ctx context.Context, username string) (user *entities.User, err error) {
+	tr := otel.Tracer("auth-model")
+	ctx, span := tr.Start(ctx, "GetByUserName")
+	defer span.End()
 
 	err = u.db.WithContext(ctx).
 		First(&user, "username = ?", username).
@@ -38,6 +48,8 @@ func (u *user) GetByUserName(ctx context.Context, username string) (user *entiti
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to get user by username", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get user by username", false)
 	}
@@ -46,6 +58,9 @@ func (u *user) GetByUserName(ctx context.Context, username string) (user *entiti
 }
 
 func (u *user) GetUsers(ctx context.Context, request *packets.ListUsersRequest) (*packets.ListUsersResponse, error) {
+	tr := otel.Tracer("auth-model")
+	ctx, span := tr.Start(ctx, "GetUsers")
+	defer span.End()
 
 	var users []*packets.UserDetails
 
@@ -72,6 +87,8 @@ func (u *user) GetUsers(ctx context.Context, request *packets.ListUsersRequest) 
 		Error
 
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to get users", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get users", false)
 	}
@@ -81,16 +98,20 @@ func (u *user) GetUsers(ctx context.Context, request *packets.ListUsersRequest) 
 }
 
 func (u *user) GetByTempToken(ctx context.Context, tempToken string) (user *entities.User, err error) {
+	tr := otel.Tracer("auth-model")
+	ctx, span := tr.Start(ctx, "GetByTempToken")
+	defer span.End()
 
 	err = u.db.WithContext(ctx).
 		First(&user, "temp_token = ?", tempToken).
 		Error
 
 	if err != nil {
-
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		customlogger.S().Errorw("failed to get user by temp token", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get user by temp token", false)
 	}
