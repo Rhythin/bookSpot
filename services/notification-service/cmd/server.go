@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"github.com/rhythin/bookspot/services/shared/connection/postgres"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/jwt_auth"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +37,13 @@ func main() {
 	defer logger.Sync()
 
 	customlogger.S().Infow("logger setup successfully")
+
+	// initialize tracing
+	tp, err := tracing.InitTracer("notification-service")
+	if err != nil {
+		customlogger.S().Fatalw("failed to initialize tracing", "Error", err)
+	}
+	defer tp.Shutdown(context.Background())
 
 	// Initialize database connection
 	DB, err := connection.NewConnection(&postgres.PostgresConfig{

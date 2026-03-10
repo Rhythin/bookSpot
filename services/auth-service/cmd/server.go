@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"github.com/rhythin/bookspot/services/shared/connection/postgres"
 	logger "github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/jwt_auth"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 )
 
 func main() {
@@ -35,6 +37,13 @@ func main() {
 	defer logger.Sync()
 
 	logger.Sugar().Infow("logger setup successfully")
+
+	// initialize tracing
+	tp, err := tracing.InitTracer("auth-service")
+	if err != nil {
+		logger.Sugar().Fatalw("failed to initialize tracing", "Error", err)
+	}
+	defer tp.Shutdown(context.Background())
 
 	// make conenction the database
 	DB, err := connection.NewConnection(&postgres.PostgresConfig{
