@@ -1,6 +1,6 @@
 module github.com/rhythin/bookspot/services/shared
 
-go 1.24.3
+go 1.26.1
 
 require gorm.io/gorm v1.30.0
 

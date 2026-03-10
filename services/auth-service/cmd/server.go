@@ -1,9 +1,10 @@
-package cmd
+package main
 
 import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -14,6 +15,7 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/service"
 	"github.com/rhythin/bookspot/services/shared/connection/postgres"
 	logger "github.com/rhythin/bookspot/services/shared/customlogger"
+	"github.com/rhythin/bookspot/services/shared/jwt_auth"
 )
 
 func main() {
@@ -55,9 +57,16 @@ func main() {
 
 	validator := validator.New()
 
+	// initialize jwt tokenizer
+	tokenizer := jwt_auth.NewTokenizer(
+		os.Getenv("JWT_SECRET"),
+		time.Hour*24,      // Access token expiry: 24h
+		time.Hour*24*7,    // Refresh token expiry: 7 days
+	)
+
 	// initilize the model, service and handler layers
 	model := model.New(DB)
-	service := service.New(model, validator)
+	service := service.New(model, validator, tokenizer)
 	handler := rest.New(service, validator)
 
 	// initialize the router

@@ -1,9 +1,10 @@
-package cmd
+package main
 
 import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -14,6 +15,7 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/service"
 	"github.com/rhythin/bookspot/services/shared/connection/postgres"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
+	"github.com/rhythin/bookspot/services/shared/jwt_auth"
 	"go.uber.org/zap"
 )
 
@@ -64,8 +66,15 @@ func main() {
 	// Initialize handlers
 	handler := handler.NewHandler(svc, validator)
 
+	// Initialize jwt tokenizer
+	tokenizer := jwt_auth.NewTokenizer(
+		os.Getenv("JWT_SECRET"),
+		time.Hour*24,      // Access token expiry: 24h
+		time.Hour*24*7,    // Refresh token expiry: 7 days
+	)
+
 	// Initialize router
-	router := rest.GetRouter(handler)
+	router := rest.GetRouter(handler, tokenizer)
 
 	// Start server
 	port := ":8081" // Different port than auth-service

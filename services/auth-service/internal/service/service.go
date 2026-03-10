@@ -6,17 +6,20 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/auth-service/internal/model"
+	"github.com/rhythin/bookspot/services/shared/jwt_auth"
 )
 
 type service struct {
 	Model     model.Model
 	Validator *validator.Validate
+	Tokenizer jwt_auth.Tokenizer
 }
 
-func New(model model.Model, validator *validator.Validate) Service {
+func New(model model.Model, validator *validator.Validate, tokenizer jwt_auth.Tokenizer) Service {
 	return &service{
 		Model:     model,
 		Validator: validator,
+		Tokenizer: tokenizer,
 	}
 }
 

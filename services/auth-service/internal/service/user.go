@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"net/http"
 
@@ -129,11 +131,18 @@ func (s *service) GetUser(ctx context.Context, userID string) (UserDetails *pack
 
 // helper function to generate a salt string for password
 func generateSalt() string {
-
-	return ""
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
 }
 
 // helper function to generate random temp token string for user
 func generateTempToken() string {
-	return ""
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
 }
