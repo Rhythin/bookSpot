@@ -8,8 +8,8 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities"
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (s *service) CreateBook(ctx context.Context, book *entities.Book) (err error) {
@@ -19,8 +19,7 @@ func (s *service) CreateBook(ctx context.Context, book *entities.Book) (err erro
 
 	err = s.Model.Book.Create(ctx, book)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return err
 }
@@ -32,8 +31,7 @@ func (s *service) GetBookByID(ctx context.Context, bookID string) (*entities.Boo
 
 	res, err := s.Model.Book.GetByID(ctx, bookID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return res, err
 }
@@ -46,22 +44,19 @@ func (s *service) UpdateBook(ctx context.Context, bookID string, book *entities.
 	// get existingBook by id
 	existingBook, err := s.GetBookByID(ctx, bookID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	if existingBook == nil {
 		err := errhandler.NewCustomError(errors.New("book not found"), http.StatusNotFound, "Book not found", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	err = s.Model.Book.Update(ctx, bookID, book)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return err
 }
@@ -74,22 +69,19 @@ func (s *service) DeleteBook(ctx context.Context, bookID string) (err error) {
 	// get existingBook by id
 	existingBook, err := s.GetBookByID(ctx, bookID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	if existingBook == nil {
 		err := errhandler.NewCustomError(errors.New("book not found"), http.StatusNotFound, "Book not found", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	err = s.Model.Book.Delete(ctx, bookID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return err
 }
@@ -101,8 +93,7 @@ func (s *service) GetBooks(ctx context.Context, req *packets.GetBooksRequest) (r
 
 	resp, err = s.Model.Book.GetList(ctx, req)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -115,8 +106,7 @@ func (s *service) GetBooks(ctx context.Context, req *packets.GetBooksRequest) (r
 	// get chapter count for each book
 	chapterCountMap, err := s.Model.Chapter.GetCount(ctx, bookIDs)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return nil, err
 	}
 

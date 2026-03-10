@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -12,14 +11,20 @@ import (
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/custommodel"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
+	"go.opentelemetry.io/otel"
 )
 
 func (h *handlerV1) AddToReadingList(w http.ResponseWriter, r *http.Request) error {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "AddToReadingList")
+	defer span.End()
 
 	bookID := r.URL.Query().Get("bookID")
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 	chapterID := r.URL.Query().Get("chapterID")
 
@@ -33,28 +38,35 @@ func (h *handlerV1) AddToReadingList(w http.ResponseWriter, r *http.Request) err
 	}
 
 	if err := h.Validator.Struct(readingListEntry); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate reading list entry", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid reading list entry", false)
 	}
 
 	if err := h.Service.AddToReadingList(ctx, readingListEntry); err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, nil, http.StatusOK)
 }
 
 func (h *handlerV1) RemoveFromReadingList(w http.ResponseWriter, r *http.Request) error {
-
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "RemoveFromReadingList")
+	defer span.End()
 
 	listEntryID := chi.URLParam(r, "listEntryID")
 	if listEntryID == "" {
-		return errhandler.NewCustomError(errors.New("listEntryID is required"), http.StatusBadRequest, "ListEntryID is required", false)
+		err := errhandler.NewCustomError(errors.New("listEntryID is required"), http.StatusBadRequest, "ListEntryID is required", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	bookID := r.URL.Query().Get("bookID")
 	if bookID == "" {
-		return errhandler.NewCustomError(errors.New("bookID is required"), http.StatusBadRequest, "BookID is required", false)
+		err := errhandler.NewCustomError(errors.New("bookID is required"), http.StatusBadRequest, "BookID is required", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	// TODO: get userID from auth middleware
@@ -69,30 +81,37 @@ func (h *handlerV1) RemoveFromReadingList(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.Validator.Struct(readingListEntry); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate reading list entry", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid reading list entry", false)
 	}
 
 	if err := h.Service.RemoveFromReadingList(ctx, readingListEntry); err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, nil, http.StatusOK)
 }
 
 func (h *handlerV1) UpdateLastReadChapter(w http.ResponseWriter, r *http.Request) error {
-
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "UpdateLastReadChapter")
+	defer span.End()
 
 	listEntryID := chi.URLParam(r, "listEntryID")
 	if listEntryID == "" {
-		customlogger.S().Warnw("list entry id is required", "Error", errors.New("list entry id is required"))
-		return errhandler.NewCustomError(errors.New("list entry id is required"), http.StatusBadRequest, "List entry id is required", false)
+		err := errhandler.NewCustomError(errors.New("list entry id is required"), http.StatusBadRequest, "List entry id is required", false)
+		tracing.RecordSpanError(span, err)
+		customlogger.S().Warnw("list entry id is required", "Error", err)
+		return err
 	}
 
 	bookID := chi.URLParam(r, "bookID")
 	if bookID == "" {
-		customlogger.S().Warnw("book id is required", "Error", errors.New("book id is required"))
-		return errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
+		tracing.RecordSpanError(span, err)
+		customlogger.S().Warnw("book id is required", "Error", err)
+		return err
 	}
 	chapterID := chi.URLParam(r, "chapterID")
 
@@ -109,13 +128,16 @@ func (h *handlerV1) UpdateLastReadChapter(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.Service.UpdateLastReadChapter(ctx, readingListEntry); err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, nil, http.StatusOK)
 }
 
 func (h *handlerV1) GetReadingList(w http.ResponseWriter, r *http.Request) error {
-	ctx := context.Background()
+	tr := otel.Tracer("books-handler")
+	ctx, span := tr.Start(r.Context(), "GetReadingList")
+	defer span.End()
 
 	limit := r.URL.Query().Get("limit")
 	offset := r.URL.Query().Get("offset")
@@ -145,12 +167,14 @@ func (h *handlerV1) GetReadingList(w http.ResponseWriter, r *http.Request) error
 	}
 
 	if err := h.Validator.Struct(req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate request", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	books, err := h.Service.GetReadingList(ctx, req)
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, books, http.StatusOK)
