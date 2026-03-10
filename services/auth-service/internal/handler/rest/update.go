@@ -7,21 +7,30 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
+	"go.opentelemetry.io/otel"
 )
 
 func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "UpdateUser")
+	defer span.End()
+
 	var req packets.UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	if err := h.service.UpdateUser(r.Context(), &req); err != nil {
+	if err := h.service.UpdateUser(ctx, &req); err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -33,18 +42,25 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) (err error)
 }
 
 func (h *handler) ForgotPassword(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "ForgotPassword")
+	defer span.End()
+
 	var req packets.ForgotPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	if err := h.service.ForgotPassword(r.Context(), &req); err != nil {
+	if err := h.service.ForgotPassword(ctx, &req); err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -56,18 +72,25 @@ func (h *handler) ForgotPassword(w http.ResponseWriter, r *http.Request) (err er
 }
 
 func (h *handler) ResetPassword(w http.ResponseWriter, r *http.Request) (err error) {
+	tr := otel.Tracer("auth-handler")
+	ctx, span := tr.Start(r.Context(), "ResetPassword")
+	defer span.End()
+
 	var req packets.ResetPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
-	if err := h.service.ResetPassword(r.Context(), &req); err != nil {
+	if err := h.service.ResetPassword(ctx, &req); err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 

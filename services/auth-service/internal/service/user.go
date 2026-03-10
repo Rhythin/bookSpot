@@ -11,8 +11,8 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,13 +24,14 @@ func (s *service) CreateUser(ctx context.Context, request *packets.RegisterReque
 	// checkexisting user by email or username
 	user, err := s.Model.User.CheckUserExists(ctx, request.Email, request.Username)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return "", err
 	}
 	if user != nil {
+		err := errhandler.NewCustomError(errors.New("user already exists"), http.StatusBadRequest, "User already exists", false)
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("user already exists", "email", request.Email)
-		return "", errhandler.NewCustomError(errors.New("user already exists"), http.StatusBadRequest, "User already exists", false)
+		return "", err
 	}
 
 	// create user
@@ -51,8 +52,7 @@ func (s *service) CreateUser(ctx context.Context, request *packets.RegisterReque
 	password := request.Password + salt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to hash password", "Error", err)
 		return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to hash password", false)
 	}
@@ -65,8 +65,7 @@ func (s *service) CreateUser(ctx context.Context, request *packets.RegisterReque
 	// create user
 	err = s.Model.User.CreateUser(ctx, newUser)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to create user", "Error", err)
 		return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to create user", false)
 	}
@@ -82,13 +81,14 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 	// check existing user by email or username
 	user, err := s.Model.User.GetByUserName(ctx, request.Username)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return "", err
 	}
 	if user == nil {
+		err := errhandler.NewCustomError(errors.New("user not found"), http.StatusNotFound, "User not found", false)
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("user not found", "username", request.Username)
-		return "", errhandler.NewCustomError(errors.New("user not found"), http.StatusNotFound, "User not found", false)
+		return "", err
 	}
 
 	// compare password
@@ -104,13 +104,11 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 		}
 		err = s.Model.User.UpdateUser(ctx, user)
 		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			tracing.RecordSpanError(span, err)
 			return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update user", false)
 		}
 		err = errors.New("invalid password")
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return "", errhandler.NewCustomError(err, http.StatusUnauthorized, "Invalid password", false)
 	}
 
@@ -120,8 +118,7 @@ func (s *service) Login(ctx context.Context, request *packets.LoginRequest) (str
 	// update user
 	err = s.Model.User.UpdateUser(ctx, user)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to update user", "Error", err)
 		return "", errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update user", false)
 	}
@@ -136,8 +133,7 @@ func (s *service) GetUsers(ctx context.Context, request *packets.ListUsersReques
 
 	res, err := s.Model.User.GetUsers(ctx, request)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return res, err
 }
@@ -149,8 +145,7 @@ func (s *service) GetUser(ctx context.Context, userID string) (UserDetails *pack
 
 	user, err := s.Model.User.GetUserByID(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return nil, err
 	}
 	return &packets.UserDetails{

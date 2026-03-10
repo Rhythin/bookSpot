@@ -9,15 +9,21 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 )
 
 func (r *readingList) Add(ctx context.Context, entry *entities.ReadingListEntry) (err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "AddToReadingList")
+	defer span.End()
 
 	err = r.db.WithContext(ctx).
 		Create(entry).
 		Error
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to add to reading list", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to add to reading list", false)
 	}
@@ -26,6 +32,9 @@ func (r *readingList) Add(ctx context.Context, entry *entities.ReadingListEntry)
 }
 
 func (r *readingList) Remove(ctx context.Context, entry *entities.ReadingListEntry) (err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "RemoveFromReadingList")
+	defer span.End()
 
 	err = r.db.WithContext(ctx).
 		Model(&entities.ReadingListEntry{}).
@@ -34,6 +43,7 @@ func (r *readingList) Remove(ctx context.Context, entry *entities.ReadingListEnt
 		Delete(entry).
 		Error
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to remove from reading list", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to remove from reading list", false)
 	}
@@ -42,6 +52,9 @@ func (r *readingList) Remove(ctx context.Context, entry *entities.ReadingListEnt
 }
 
 func (r *readingList) GetByID(ctx context.Context, entry *entities.ReadingListEntry) (resp *entities.ReadingListEntry, err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "GetReadingListEntry")
+	defer span.End()
 
 	tx := r.db.WithContext(ctx).
 		Model(&entities.ReadingListEntry{}).
@@ -49,10 +62,11 @@ func (r *readingList) GetByID(ctx context.Context, entry *entities.ReadingListEn
 
 	err = tx.First(&resp).Error
 	if err != nil {
-		customlogger.S().Warnw("failed to get reading list entry", "Error", err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+		tracing.RecordSpanError(span, err)
+		customlogger.S().Warnw("failed to get reading list entry", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get reading list entry", false)
 	}
 
@@ -60,6 +74,9 @@ func (r *readingList) GetByID(ctx context.Context, entry *entities.ReadingListEn
 }
 
 func (r *readingList) UpdateLastReadChapter(ctx context.Context, entry *entities.ReadingListEntry) (err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "UpdateLastReadChapter")
+	defer span.End()
 
 	tx := r.db.WithContext(ctx).
 		Model(&entities.ReadingListEntry{}).
@@ -70,6 +87,7 @@ func (r *readingList) UpdateLastReadChapter(ctx context.Context, entry *entities
 	err = tx.Update("last_read_chapter", entry.LastReadChapter).
 		Error
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to update last read chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update last read chapter", false)
 	}
@@ -78,6 +96,9 @@ func (r *readingList) UpdateLastReadChapter(ctx context.Context, entry *entities
 }
 
 func (r *readingList) GetDuplicate(ctx context.Context, entry *entities.ReadingListEntry) (resp *entities.ReadingListEntry, err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "GetDuplicateReadingListEntry")
+	defer span.End()
 
 	tx := r.db.WithContext(ctx).
 		Model(&entities.ReadingListEntry{}).
@@ -87,10 +108,11 @@ func (r *readingList) GetDuplicate(ctx context.Context, entry *entities.ReadingL
 
 	err = tx.First(&resp).Error
 	if err != nil {
-		customlogger.S().Warnw("failed to get reading list entry", "Error", err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+		tracing.RecordSpanError(span, err)
+		customlogger.S().Warnw("failed to get reading list entry", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get reading list entry", false)
 	}
 
@@ -98,6 +120,10 @@ func (r *readingList) GetDuplicate(ctx context.Context, entry *entities.ReadingL
 }
 
 func (r *readingList) GetReadingList(ctx context.Context, req *packets.GetReadingListRequest) (resp *packets.ListReadingListResponse, err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "GetReadingList")
+	defer span.End()
+
 	var entries []*packets.ReadingListEntryDetails
 	var totalCount, searchCount int64
 
@@ -112,6 +138,7 @@ func (r *readingList) GetReadingList(ctx context.Context, req *packets.GetReadin
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get reading list", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get reading list", false)
 	}

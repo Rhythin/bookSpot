@@ -9,52 +9,86 @@ import (
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
 	"github.com/rhythin/bookspot/services/shared/jwt_auth"
+	"github.com/rhythin/bookspot/services/shared/tracing"
+	"go.opentelemetry.io/otel"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *service) UpdateUser(ctx context.Context, request *packets.UpdateUserRequest) error {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "UpdateUser")
+	defer span.End()
+
 	// auth check: only the user themselves or an admin can update
 	claims, ok := jwt_auth.GetClaims(ctx)
 	if !ok {
-		return errhandler.NewCustomError(errors.New("unauthorized"), http.StatusUnauthorized, "Login required", false)
+		err := errhandler.NewCustomError(errors.New("unauthorized"), http.StatusUnauthorized, "Login required", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	if claims.ID != request.UserID && !claims.IsAdmin {
-		return errhandler.NewCustomError(errors.New("forbidden"), http.StatusForbidden, "Insufficient permissions", false)
+		err := errhandler.NewCustomError(errors.New("forbidden"), http.StatusForbidden, "Insufficient permissions", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	user, err := s.Model.User.GetUserByID(ctx, request.UserID)
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	if user == nil {
-		return errhandler.NewCustomError(errors.New("user not found"), http.StatusNotFound, "User not found", false)
+		err := errhandler.NewCustomError(errors.New("user not found"), http.StatusNotFound, "User not found", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	user.Email = request.Email
 	user.FirstName = request.FirstName
 	user.LastName = request.LastName
 
-	return s.Model.User.UpdateUser(ctx, user)
+	err = s.Model.User.UpdateUser(ctx, user)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+	}
+	return err
 }
 
 func (s *service) DeleteUser(ctx context.Context, userID string) error {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "DeleteUser")
+	defer span.End()
+
 	// auth check: only the user themselves or an admin can delete
 	claims, ok := jwt_auth.GetClaims(ctx)
 	if !ok {
-		return errhandler.NewCustomError(errors.New("unauthorized"), http.StatusUnauthorized, "Login required", false)
+		err := errhandler.NewCustomError(errors.New("unauthorized"), http.StatusUnauthorized, "Login required", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	if claims.ID != userID && !claims.IsAdmin {
-		return errhandler.NewCustomError(errors.New("forbidden"), http.StatusForbidden, "Insufficient permissions", false)
+		err := errhandler.NewCustomError(errors.New("forbidden"), http.StatusForbidden, "Insufficient permissions", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
-	return s.Model.User.DeleteUser(ctx, userID)
+	err := s.Model.User.DeleteUser(ctx, userID)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+	}
+	return err
 }
 
 func (s *service) ForgotPassword(ctx context.Context, request *packets.ForgotPasswordRequest) error {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "ForgotPassword")
+	defer span.End()
+
 	user, err := s.Model.User.CheckUserExists(ctx, request.Email, request.Username)
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	if user == nil {
@@ -63,16 +97,27 @@ func (s *service) ForgotPassword(ctx context.Context, request *packets.ForgotPas
 	}
 
 	user.TempToken = generateTempToken()
-	return s.Model.User.UpdateUser(ctx, user)
+	err = s.Model.User.UpdateUser(ctx, user)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+	}
+	return err
 }
 
 func (s *service) ResetPassword(ctx context.Context, request *packets.ResetPasswordRequest) error {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "ResetPassword")
+	defer span.End()
+
 	user, err := s.Model.User.GetByTempToken(ctx, request.TempToken)
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	if user == nil {
-		return errhandler.NewCustomError(errors.New("invalid token"), http.StatusBadRequest, "Invalid or expired reset token", false)
+		err := errhandler.NewCustomError(errors.New("invalid token"), http.StatusBadRequest, "Invalid or expired reset token", false)
+		tracing.RecordSpanError(span, err)
+		return err
 	}
 
 	// generate salt
@@ -90,10 +135,18 @@ func (s *service) ResetPassword(ctx context.Context, request *packets.ResetPassw
 	user.Salt = salt
 	user.TempToken = "" // clear token after use
 
-	return s.Model.User.UpdateUser(ctx, user)
+	err = s.Model.User.UpdateUser(ctx, user)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+	}
+	return err
 }
 
 func (s *service) Logout(ctx context.Context) error {
+	tr := otel.Tracer("auth-service")
+	ctx, span := tr.Start(ctx, "Logout")
+	defer span.End()
+
 	// For JWT, logout often involves blacklisting on the client side or a server-side bloom filter.
 	// If we have a session in DB, we'd clear it.
 	
@@ -105,6 +158,7 @@ func (s *service) Logout(ctx context.Context) error {
 
 	user, err := s.Model.User.GetUserByID(ctx, claims.ID)
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	if user == nil {
@@ -112,5 +166,9 @@ func (s *service) Logout(ctx context.Context) error {
 	}
 
 	user.TempToken = ""
-	return s.Model.User.UpdateUser(ctx, user)
+	err = s.Model.User.UpdateUser(ctx, user)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+	}
+	return err
 }

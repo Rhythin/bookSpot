@@ -9,8 +9,8 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	"gorm.io/gorm"
 )
 
@@ -24,8 +24,7 @@ func (b *book) Create(ctx context.Context, book *entities.Book) (err error) {
 		Error
 
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to create book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to create book", false)
 	}
@@ -44,8 +43,7 @@ func (b *book) Update(ctx context.Context, bookID string, book *entities.Book) (
 		Error
 
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to update book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update book", false)
 	}
@@ -64,8 +62,7 @@ func (b *book) Delete(ctx context.Context, bookID string) (err error) {
 		Error
 
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to delete book", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to delete book", false)
 	}
@@ -91,8 +88,7 @@ func (b *book) GetList(ctx context.Context, req *packets.GetBooksRequest) (resp 
 		Error
 
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get books", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get books", false)
 	}
@@ -122,8 +118,7 @@ func (b *book) GetByID(ctx context.Context, bookID string) (*entities.Book, erro
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get book by id", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get book by id", false)
 	}

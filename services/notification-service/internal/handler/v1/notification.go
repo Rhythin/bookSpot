@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (h *handlerV1) GetNotifications(w http.ResponseWriter, r *http.Request) (err error) {
@@ -22,8 +22,7 @@ func (h *handlerV1) GetNotifications(w http.ResponseWriter, r *http.Request) (er
 	// get notifications from service
 	notifications, err := h.Service.GetNotifications(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -42,8 +41,7 @@ func (h *handlerV1) GetUnreadCount(w http.ResponseWriter, r *http.Request) (err 
 	// get unread count from service
 	unreadCount, err := h.Service.GetUnreadCount(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -61,8 +59,7 @@ func (h *handlerV1) MarkAsRead(w http.ResponseWriter, r *http.Request) (err erro
 
 	if id == "" {
 		err := errhandler.NewCustomError(errors.New("notificationID is empty"), http.StatusBadRequest, "notificationID is empty", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Error("notificationID is empty", "notificationID", id)
 		return err
 	}
@@ -70,8 +67,7 @@ func (h *handlerV1) MarkAsRead(w http.ResponseWriter, r *http.Request) (err erro
 	// mark as read in service
 	err = h.Service.MarkAsRead(ctx, id)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -90,8 +86,7 @@ func (h *handlerV1) MarkAllAsRead(w http.ResponseWriter, r *http.Request) (err e
 	// mark all as read in service
 	err = h.Service.MarkAllAsRead(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 

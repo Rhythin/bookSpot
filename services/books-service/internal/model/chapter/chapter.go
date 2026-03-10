@@ -8,15 +8,21 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
+	"go.opentelemetry.io/otel"
 )
 
 func (c *chapter) Add(ctx context.Context, chapter *entities.Chapter) error {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "AddChapter")
+	defer span.End()
 
 	err := c.db.WithContext(ctx).
 		Create(chapter).
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to add chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to add chapter", false)
 	}
@@ -25,6 +31,10 @@ func (c *chapter) Add(ctx context.Context, chapter *entities.Chapter) error {
 }
 
 func (c *chapter) GetList(ctx context.Context, req *packets.GetChapterListRequest) (resp *packets.ListChaptersResponse, err error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "GetChapterList")
+	defer span.End()
+
 	var chapters []*packets.ChapterDetails
 	var totalCount, searchCount int64
 
@@ -39,6 +49,7 @@ func (c *chapter) GetList(ctx context.Context, req *packets.GetChapterListReques
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get chapter list", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get chapter list", false)
 	}
@@ -51,6 +62,10 @@ func (c *chapter) GetList(ctx context.Context, req *packets.GetChapterListReques
 }
 
 func (c *chapter) GetByID(ctx context.Context, bookID string, chapterID string) (*entities.Chapter, error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "GetChapterByID")
+	defer span.End()
+
 	var chapter *entities.Chapter
 
 	err := c.db.WithContext(ctx).
@@ -60,6 +75,7 @@ func (c *chapter) GetByID(ctx context.Context, bookID string, chapterID string) 
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get chapter by id", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get chapter by id", false)
 	}
@@ -68,6 +84,9 @@ func (c *chapter) GetByID(ctx context.Context, bookID string, chapterID string) 
 }
 
 func (c *chapter) Update(ctx context.Context, chapter *entities.Chapter) error {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "UpdateChapter")
+	defer span.End()
 
 	err := c.db.WithContext(ctx).
 		Where("id = ?", chapter.ID).
@@ -75,6 +94,7 @@ func (c *chapter) Update(ctx context.Context, chapter *entities.Chapter) error {
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to update chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to update chapter", false)
 	}
@@ -83,6 +103,9 @@ func (c *chapter) Update(ctx context.Context, chapter *entities.Chapter) error {
 }
 
 func (c *chapter) Delete(ctx context.Context, bookID string, chapterID string) error {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "DeleteChapter")
+	defer span.End()
 
 	err := c.db.WithContext(ctx).
 		Where("book_id = ?", bookID).
@@ -91,6 +114,7 @@ func (c *chapter) Delete(ctx context.Context, bookID string, chapterID string) e
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to delete chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to delete chapter", false)
 	}
@@ -99,6 +123,10 @@ func (c *chapter) Delete(ctx context.Context, bookID string, chapterID string) e
 }
 
 func (c *chapter) GetCount(ctx context.Context, bookIDs []string) (map[string]int64, error) {
+	tr := otel.Tracer("books-model")
+	ctx, span := tr.Start(ctx, "GetChapterCount")
+	defer span.End()
+
 	var chapterCount map[string]int64
 
 	err := c.db.WithContext(ctx).
@@ -109,6 +137,7 @@ func (c *chapter) GetCount(ctx context.Context, bookIDs []string) (map[string]in
 		Error
 
 	if err != nil {
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get chapter count", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get chapter count", false)
 	}

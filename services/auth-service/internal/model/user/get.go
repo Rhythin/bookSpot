@@ -8,8 +8,8 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	"gorm.io/gorm"
 )
 
@@ -26,8 +26,7 @@ func (u *user) GetUserByID(ctx context.Context, userID string) (user *entities.U
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get user by id", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get user by id", false)
 	}
@@ -48,8 +47,7 @@ func (u *user) GetByUserName(ctx context.Context, username string) (user *entiti
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get user by username", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get user by username", false)
 	}
@@ -87,8 +85,7 @@ func (u *user) GetUsers(ctx context.Context, request *packets.ListUsersRequest) 
 		Error
 
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get users", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get users", false)
 	}
@@ -110,8 +107,7 @@ func (u *user) GetByTempToken(ctx context.Context, tempToken string) (user *enti
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Errorw("failed to get user by temp token", "Error", err)
 		return nil, errhandler.NewCustomError(err, http.StatusInternalServerError, "Failed to get user by temp token", false)
 	}

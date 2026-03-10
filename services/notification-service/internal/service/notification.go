@@ -6,8 +6,8 @@ import (
 
 	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (s *service) GetNotifications(ctx context.Context, userID string) (result []*packets.NotificationDetails, err error) {
@@ -17,8 +17,7 @@ func (s *service) GetNotifications(ctx context.Context, userID string) (result [
 
 	result, err = s.Model.Notification.GetNotifications(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return result, err
 }
@@ -30,8 +29,7 @@ func (s *service) GetUnreadCount(ctx context.Context, userID string) (count int6
 
 	count, err = s.Model.Notification.GetUnreadCount(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return count, err
 }
@@ -43,8 +41,7 @@ func (s *service) MarkAsRead(ctx context.Context, notificationID string) (err er
 
 	err = s.Model.Notification.MarkAsRead(ctx, notificationID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return err
 }
@@ -56,8 +53,7 @@ func (s *service) MarkAllAsRead(ctx context.Context, userID string) (err error) 
 
 	err = s.Model.Notification.MarkAllAsRead(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return err
 }
@@ -81,8 +77,7 @@ func (s *service) CreateNotification(ctx context.Context, notification *packets.
 
 	err = s.Model.Notification.CreateNotification(ctx, notifications)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 	}
 	return err
 }

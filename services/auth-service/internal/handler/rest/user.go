@@ -10,8 +10,8 @@ import (
 	"github.com/rhythin/bookspot/auth-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
@@ -21,16 +21,14 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
 
 	var req packets.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	tempToken, err := h.service.CreateUser(ctx, &req)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -49,16 +47,14 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) (err error) {
 
 	var req packets.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode request", "error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	tempToken, err := h.service.Login(ctx, &req)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -95,8 +91,7 @@ func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
 
 	users, err := h.service.GetUsers(ctx, &req)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -111,15 +106,13 @@ func (h *handler) GetUser(w http.ResponseWriter, r *http.Request) (err error) {
 	userID := chi.URLParam(r, "userID")
 	if userID == "" {
 		err := errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	user, err := h.service.GetUser(ctx, userID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, user, http.StatusOK)
@@ -131,8 +124,7 @@ func (h *handler) Logout(w http.ResponseWriter, r *http.Request) (err error) {
 	defer span.End()
 
 	if err := h.service.Logout(ctx); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -151,14 +143,12 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) (err error)
 	userID := chi.URLParam(r, "userID")
 	if userID == "" {
 		err := errhandler.NewCustomError(errors.New("userID is required"), http.StatusBadRequest, "UserID is required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	if err := h.service.DeleteUser(ctx, userID); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 

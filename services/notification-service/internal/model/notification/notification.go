@@ -6,8 +6,8 @@ import (
 	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/notification-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (n *notification) GetNotifications(ctx context.Context, userID string) (result []*packets.NotificationDetails, err error) {
@@ -19,8 +19,7 @@ func (n *notification) GetNotifications(ctx context.Context, userID string) (res
 		Where("user_id = ?", userID).
 		Find(&result).Error
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to get notifications for user", "userID", userID, "error", err)
 		return nil, err
 	}
@@ -38,8 +37,7 @@ func (n *notification) GetUnreadCount(ctx context.Context, userID string) (count
 		Find(&count).
 		Error
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to get unread count for user", "userID", userID, "error", err)
 		return 0, err
 	}
@@ -57,8 +55,7 @@ func (n *notification) MarkAsRead(ctx context.Context, notificationID string) (e
 		Update("is_read", true).
 		Error
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to mark notification as read", "notificationID", notificationID, "error", err)
 		return err
 	}
@@ -76,8 +73,7 @@ func (n *notification) MarkAllAsRead(ctx context.Context, userID string) (err er
 		Update("is_read", true).
 		Error
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to mark all notifications as read for user", "userID", userID, "error", err)
 		return err
 	}
@@ -93,8 +89,7 @@ func (n *notification) CreateNotification(ctx context.Context, notifications []*
 	err = n.db.WithContext(ctx).
 		Create(&notifications).Error
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to create notification", "error", err)
 		return err
 	}

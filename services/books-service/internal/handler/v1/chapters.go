@@ -11,8 +11,8 @@ import (
 	"github.com/rhythin/bookspot/books-service/internal/entities/packets"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
+	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
 func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
@@ -24,22 +24,19 @@ func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
 
 	if bookID == "" {
 		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	if r.Body == http.NoBody {
 		err := errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	var chapter entities.Chapter
 	if err := json.NewDecoder(r.Body).Decode(&chapter); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid body", false)
 	}
@@ -48,15 +45,13 @@ func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
 
 	// validate chapter
 	if err := h.Validator.Struct(chapter); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid chapter", false)
 	}
 
 	if err := h.Service.AddChapter(ctx, &chapter); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -71,8 +66,7 @@ func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error
 	bookID := chi.URLParam(r, "book_id")
 	if bookID == "" {
 		err := errhandler.NewCustomError(errors.New("book id is required"), http.StatusBadRequest, "Book id is required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
@@ -101,16 +95,14 @@ func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error
 	}
 
 	if err := h.Validator.Struct(req); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate request", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid request", false)
 	}
 
 	chapters, err := h.Service.GetChapterList(ctx, req)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, chapters, http.StatusOK)
@@ -126,15 +118,13 @@ func (h *handlerV1) GetChapterByID(w http.ResponseWriter, r *http.Request) error
 
 	if bookID == "" || chapterID == "" {
 		err := errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	chapter, err := h.Service.GetChapterByID(ctx, bookID, chapterID)
 	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, chapter, http.StatusOK)
@@ -150,30 +140,26 @@ func (h *handlerV1) UpdateChapter(w http.ResponseWriter, r *http.Request) error 
 
 	if bookID == "" || chapterID == "" {
 		err := errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	if r.Body == http.NoBody {
 		err := errhandler.NewCustomError(errors.New("no body provided"), http.StatusBadRequest, "No body provided", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	var chapter entities.Chapter
 	if err := json.NewDecoder(r.Body).Decode(&chapter); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to decode chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid body", false)
 	}
 
 	// validate chapter
 	if err := h.Validator.Struct(chapter); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		customlogger.S().Warnw("failed to validate chapter", "Error", err)
 		return errhandler.NewCustomError(err, http.StatusBadRequest, "Invalid chapter", false)
 	}
@@ -182,8 +168,7 @@ func (h *handlerV1) UpdateChapter(w http.ResponseWriter, r *http.Request) error 
 	chapter.ID = chapterID
 
 	if err := h.Service.UpdateChapter(ctx, &chapter); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, chapter, http.StatusOK)
@@ -199,14 +184,12 @@ func (h *handlerV1) DeleteChapter(w http.ResponseWriter, r *http.Request) error 
 
 	if bookID == "" || chapterID == "" {
 		err := errhandler.NewCustomError(errors.New("book id and chapter id are required"), http.StatusBadRequest, "Book id and chapter id are required", false)
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 
 	if err := h.Service.DeleteChapter(ctx, bookID, chapterID); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		tracing.RecordSpanError(span, err)
 		return err
 	}
 	return sendResponse(w, nil, http.StatusOK)
