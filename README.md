@@ -62,8 +62,8 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 ## 🛠️ Technology Stack
 
 ### Backend Technologies
-- **Language**: Go (Golang) 1.21+
-- **Framework**: Custom HTTP handlers with middleware pattern
+- **Language**: Go (Golang) 1.26+
+- **Framework**: Custom HTTP handlers with middleware pattern using go chi
 - **Database**: PostgreSQL with connection pooling
 - **Message Queue**: Apache Kafka with custom client
 - **Communication**: gRPC for inter-service communication
@@ -79,17 +79,19 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 ## 📋 Project Status
 
 ### Completed Features
-- [x] **Microservices Architecture** - Complete service separation and organization
-- [x] **Custom Kafka Client** - Full implementation with consumer groups and error handling
-- [x] **PostgreSQL Integration** - Database drivers and connection management
+- [x] **Microservices Architecture** - 3 services with complete separation and organization along with synchronus and asynchronus communication between services
+- [x] **Custom Kafka Client wraper around sarama library** - Full implementation with consumer groups and error handling
+- [x] **PostgreSQL connector package** - Database drivers and connection management
 - [x] **Custom Logger** - Structured logging system across all services
 - [x] **JWT Authentication** - Token-based authentication middleware
 - [x] **Event-Driven Notifications** - Kafka-based notification system
 - [x] **Database Models** - Complete entity definitions and relationships
 - [x] **HTTP Handlers** - RESTful API endpoints for all services
-- [x] **Error Handling** - Comprehensive error handling and logging
-- [x] **Docker Configuration** - Dockerfiles and docker-compose.yml
-- [x] **OpenTelemetry** - Distributed tracing and metrics using otel and jaeger
+- [x] **Error Handling** - Comprehensive error handling package and logging
+- [x] **Docker Configuration** - Dockerfiles and docker-compose.yml for building the images and running the services locally
+- [x] **OpenTelemetry** - Distributed tracing and metrics using otel and jaeger for monitoring the services
+- [x] **Custom Middleware** - HTTP middleware for authentication and error handling
+- [x] **API Documentation** - OpenAPI/Swagger documentation
 
 ### 🔄 In Progress
 - [ ] **gRPC Communication** - Inter-service communication implementation
@@ -100,7 +102,6 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 ### 📅 Future Enhancements
 - [ ] **Frontend Application** - React/Vue.js user interface
 - [ ] **CI/CD Pipeline** - Automated testing and deployment
-- [ ] **API Documentation** - OpenAPI/Swagger documentation
 - [ ] **Load Testing** - Performance testing and optimization
 - [ ] **Monitoring Dashboard** - Grafana/Prometheus integration
 
@@ -108,11 +109,11 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 
 ### Prerequisites
 ```bash
-- Go 1.21+
+- Go 1.26+
 - PostgreSQL 14+
-- Apache Kafka 2.8+
-- Docker & Docker Compose
-- Kubernetes cluster (optional)
+- Apache Kafka 2.8 - 3.9 (sarama does not support greater than 4.0)
+- Docker & Docker Compose (for building and running the services locally)
+- Kubernetes cluster (optional in case you want to deploy it on a cluster)
 ```
 
 ### Local Development
@@ -139,8 +140,8 @@ cd services/notification-service && go run cmd/server.go
 - **Parallel Processing** supporting multiple listeners per service
 
 ### Microservices Communication
-- **gRPC** for high-performance inter-service communication
-- **Event Sourcing** with Kafka for data consistency
+- **gRPC** for high-performance inter-service communication synchronusly
+- **Event Sourcing** with Kafka for data consistency and asynchronus communication
 - **Service Discovery** using Kubernetes native features
 - **Load Balancing** with automatic failover
 
@@ -148,16 +149,15 @@ cd services/notification-service && go run cmd/server.go
 - **Connection Pooling** for optimal resource utilization
 - **Transaction Management** with proper rollback mechanisms
 - **Entity Relationships** with optimized queries
-- **Migration System** for schema versioning
 
 ## 🤝 Contributing
 
 This project is primarily a portfolio showcase, but contributions and feedback are welcome! Please feel free to:
 
-- 🐛 Report bugs or issues
-- 💡 Suggest new features or improvements
-- 📖 Improve documentation
-- 🔧 Submit pull requests
+- Report bugs or issues
+- Suggest new features or improvements
+- Improve documentation
+- Submit pull requests
 
 ## 📧 Contact
 
@@ -165,4 +165,5 @@ This project demonstrates proficiency in modern backend development, microservic
 
 ---
 
-*This project showcases expertise in Go, microservices architecture, Kafka, PostgreSQL, Kubernetes, and modern DevOps practices.*
+*This project is for learning and showcasing my skills in Go, microservices architecture, Kafka, PostgreSQL, docker, Kubernetes, and modern DevOps practices.*
+
