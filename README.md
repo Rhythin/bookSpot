@@ -42,22 +42,22 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 - **Custom Logging System** with structured logging
 - **Kubernetes-Ready Deployment** with containerized services
 
-## 🚀 Features
+##  Features
 
 ### Core Functionality
-- ✅ **User Management** - Registration, authentication, and authorization
-- ✅ **Book Management** - CRUD operations for books and metadata
-- ✅ **Chapter Management** - Chapter organization and content handling
-- ✅ **Reading Lists** - Personal book collections and progress tracking
-- ✅ **Real-time Notifications** - Event-driven notification system
-- ✅ **Centralized Logging** - Structured logging across all services
+-  **User Management** - Registration, authentication, and authorization
+-  **Book Management** - CRUD operations for books and metadata
+-  **Chapter Management** - Chapter organization and content handling
+-  **Reading Lists** - Personal book collections and progress tracking
+-  **Real-time Notifications** - Event-driven notification system
+-  **Centralized Logging** - Structured logging across all services
 
 ### Technical Features
-- 🔄 **Event-Driven Architecture** with Kafka message streaming
-- 🔒 **Security Middleware** with JWT token validation
-- 📊 **Database Optimization** with connection pooling and migrations
-- 🐳 **Containerization** with Docker and Kubernetes deployment
-- 📈 **Scalable Design** supporting horizontal scaling
+-  **Event-Driven Architecture** with Kafka message streaming
+-  **Security Middleware** with JWT token validation
+-  **Database Optimization** with connection pooling and migrations
+-  **Containerization** with Docker and Kubernetes deployment
+-  **Scalable Design** supporting horizontal scaling
 
 ## 🛠️ Technology Stack
 
@@ -78,7 +78,7 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 
 ## 📋 Project Status
 
-### ✅ Completed Features
+### Completed Features
 - [x] **Microservices Architecture** - Complete service separation and organization
 - [x] **Custom Kafka Client** - Full implementation with consumer groups and error handling
 - [x] **PostgreSQL Integration** - Database drivers and connection management
@@ -89,6 +89,7 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 - [x] **HTTP Handlers** - RESTful API endpoints for all services
 - [x] **Error Handling** - Comprehensive error handling and logging
 - [x] **Docker Configuration** - Dockerfiles and docker-compose.yml
+- [x] **OpenTelemetry** - Distributed tracing and metrics using otel and jaeger
 
 ### 🔄 In Progress
 - [ ] **gRPC Communication** - Inter-service communication implementation
@@ -98,7 +99,6 @@ Bookspot is a comprehensive microservices-based web application inspired by mode
 
 ### 📅 Future Enhancements
 - [ ] **Frontend Application** - React/Vue.js user interface
-- [ ] **OpenTelemetry** - Distributed tracing and metrics
 - [ ] **CI/CD Pipeline** - Automated testing and deployment
 - [ ] **API Documentation** - OpenAPI/Swagger documentation
 - [ ] **Load Testing** - Performance testing and optimization
