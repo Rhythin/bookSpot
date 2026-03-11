@@ -11,6 +11,17 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+// UpdateUser godoc
+// @Summary      Update user
+// @Description  Update details for a specific user
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        userID   path      string                    true  "User ID"
+// @Param        request  body      packets.UpdateUserRequest  true  "Update User Request"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /user/{userID} [put]
 func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "UpdateUser")
@@ -41,6 +52,16 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) (err error)
 	return sendResponse(w, messages, http.StatusOK)
 }
 
+// ForgotPassword godoc
+// @Summary      Forgot password
+// @Description  Request a password reset email
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        request  body      packets.ForgotPasswordRequest  true  "Forgot Password Request"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /user/forgot-password [post]
 func (h *handler) ForgotPassword(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "ForgotPassword")
@@ -71,6 +92,16 @@ func (h *handler) ForgotPassword(w http.ResponseWriter, r *http.Request) (err er
 	return sendResponse(w, messages, http.StatusOK)
 }
 
+// ResetPassword godoc
+// @Summary      Reset password
+// @Description  Reset user password using a temporary token
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        request  body      packets.ResetPasswordRequest  true  "Reset Password Request"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /user/reset-password [post]
 func (h *handler) ResetPassword(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "ResetPassword")

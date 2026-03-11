@@ -4,15 +4,22 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/riandyrn/otelchi"
+	_ "github.com/rhythin/bookspot/books-service/docs"
 	"github.com/rhythin/bookspot/books-service/internal/handler"
 	v1 "github.com/rhythin/bookspot/books-service/internal/router/rest/v1"
 	"github.com/rhythin/bookspot/services/shared/jwt_auth"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func GetRouter(handler handler.Handler, tokenizer jwt_auth.Tokenizer) chi.Router {
 
 	r := chi.NewRouter()
-	
+
+	// routes
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition
+	))
+
 	// jwt middleware
 	authMw := jwt_auth.NewMiddleware(tokenizer)
 

@@ -1,3 +1,18 @@
+// @title           Notification Service API
+// @version         1.0
+// @description     API documentation for the Notification Service
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8082
+// @BasePath  /v1
+
 package main
 
 import (
@@ -86,7 +101,7 @@ func main() {
 	router := rest.GetRouter(handler, tokenizer)
 
 	// Start server
-	port := ":8081" // Different port than auth-service
+	port := ":8082" // Different port than books-service
 	logger.Info("starting server", zap.String("port", port))
 	if err := http.ListenAndServe(port, router); err != nil {
 		logger.Fatal("failed to start server", zap.Error(err))

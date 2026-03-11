@@ -12,6 +12,16 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+// GetToken godoc
+// @Summary      Get auth tokens
+// @Description  Exchanges a temporary token for access and refresh tokens
+// @Tags         token
+// @Accept       json
+// @Produce      json
+// @Param        tempToken  query     string  true  "Temporary Token"
+// @Success      200        {object}  packets.TokenResponse
+// @Failure      400        {object}  map[string]interface{}
+// @Router       /token [get]
 func (h *handler) GetToken(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "GetToken")
@@ -33,6 +43,16 @@ func (h *handler) GetToken(w http.ResponseWriter, r *http.Request) (err error) {
 	return sendResponse(w, resp, http.StatusOK)
 }
 
+// RevokeToken godoc
+// @Summary      Revoke token
+// @Description  Revokes tokens for a specific user
+// @Tags         token
+// @Accept       json
+// @Produce      json
+// @Param        request  body      packets.RevokeTokenRequest  true  "Revoke Token Request"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /token/revoke [post]
 func (h *handler) RevokeToken(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "RevokeToken")
@@ -63,6 +83,16 @@ func (h *handler) RevokeToken(w http.ResponseWriter, r *http.Request) (err error
 	return sendResponse(w, messages, http.StatusOK)
 }
 
+// RefreshToken godoc
+// @Summary      Refresh token
+// @Description  Refreshes the access token using the refresh token
+// @Tags         token
+// @Accept       json
+// @Produce      json
+// @Param        request  body      packets.RevokeTokenRequest  true  "Refresh Token Request (using UserID)"
+// @Success      200      {object}  packets.TokenResponse
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /token/refresh [post]
 func (h *handler) RefreshToken(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "RefreshToken")

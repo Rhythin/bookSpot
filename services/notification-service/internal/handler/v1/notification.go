@@ -5,12 +5,24 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rhythin/bookspot/notification-service/internal/entities"
 	"github.com/rhythin/bookspot/services/shared/customlogger"
 	"github.com/rhythin/bookspot/services/shared/errhandler"
 	"github.com/rhythin/bookspot/services/shared/tracing"
 	"go.opentelemetry.io/otel"
 )
 
+var _ = entities.Notification{}
+
+// GetNotifications godoc
+// @Summary      Get user notifications
+// @Description  Get a list of notifications for the current user
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   entities.Notification
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /notifications [get]
 func (h *handlerV1) GetNotifications(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("notification-handler")
 	ctx, span := tr.Start(r.Context(), "GetNotifications")
@@ -30,6 +42,14 @@ func (h *handlerV1) GetNotifications(w http.ResponseWriter, r *http.Request) (er
 	return sendResponse(w, notifications, http.StatusOK)
 }
 
+// GetUnreadCount godoc
+// @Summary      Get unread notifications count
+// @Description  Get the number of unread notifications for the current user
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  map[string]int
+// @Router       /notifications/unread-count [get]
 func (h *handlerV1) GetUnreadCount(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("notification-handler")
 	ctx, span := tr.Start(r.Context(), "GetUnreadCount")
@@ -49,6 +69,16 @@ func (h *handlerV1) GetUnreadCount(w http.ResponseWriter, r *http.Request) (err 
 	return sendResponse(w, unreadCount, http.StatusOK)
 }
 
+// MarkAsRead godoc
+// @Summary      Mark notification as read
+// @Description  Mark a specific notification as read by its ID
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Param        notificationID  path      string  true  "Notification ID"
+// @Success      200             {object}  map[string]interface{}
+// @Failure      400             {object}  map[string]interface{}
+// @Router       /notifications/{notificationID}/read [put]
 func (h *handlerV1) MarkAsRead(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("notification-handler")
 	ctx, span := tr.Start(r.Context(), "MarkAsRead")
@@ -75,6 +105,14 @@ func (h *handlerV1) MarkAsRead(w http.ResponseWriter, r *http.Request) (err erro
 	return sendResponse(w, nil, http.StatusOK)
 }
 
+// MarkAllAsRead godoc
+// @Summary      Mark all notifications as read
+// @Description  Mark all notifications for the current user as read
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /notifications/read-all [put]
 func (h *handlerV1) MarkAllAsRead(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("notification-handler")
 	ctx, span := tr.Start(r.Context(), "MarkAllAsRead")

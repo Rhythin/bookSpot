@@ -15,6 +15,17 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+// AddChapter godoc
+// @Summary      Add a new chapter
+// @Description  Add a new chapter to a specific book
+// @Tags         chapters
+// @Accept       json
+// @Produce      json
+// @Param        book_id  path      string            true  "Book ID"
+// @Param        chapter  body      entities.Chapter  true  "Chapter Details"
+// @Success      201      {object}  entities.Chapter
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /books/{book_id}/chapters [post]
 func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "AddChapter")
@@ -58,6 +69,19 @@ func (h *handlerV1) AddChapter(w http.ResponseWriter, r *http.Request) error {
 	return sendResponse(w, chapter, http.StatusCreated)
 }
 
+// GetChapterList godoc
+// @Summary      List chapters
+// @Description  Get a paginated list of chapters for a specific book
+// @Tags         chapters
+// @Accept       json
+// @Produce      json
+// @Param        book_id  path      string  true   "Book ID"
+// @Param        limit    query     int     false  "Limit"
+// @Param        offset   query     int     false  "Offset"
+// @Param        search   query     string  false  "Search term"
+// @Success      200      {object}  packets.ListChaptersResponse
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /books/{book_id}/chapters [get]
 func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "GetChapterList")
@@ -108,6 +132,18 @@ func (h *handlerV1) GetChapterList(w http.ResponseWriter, r *http.Request) error
 	return sendResponse(w, chapters, http.StatusOK)
 }
 
+// GetChapterByID godoc
+// @Summary      Get chapter by ID
+// @Description  Get detailed information about a specific chapter
+// @Tags         chapters
+// @Accept       json
+// @Produce      json
+// @Param        book_id     path      string  true  "Book ID"
+// @Param        chapter_id  path      string  true  "Chapter ID"
+// @Success      200         {object}  entities.Chapter
+// @Failure      400         {object}  map[string]interface{}
+// @Failure      404         {object}  map[string]interface{}
+// @Router       /books/{book_id}/chapters/{chapter_id} [get]
 func (h *handlerV1) GetChapterByID(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "GetChapterByID")
@@ -130,6 +166,18 @@ func (h *handlerV1) GetChapterByID(w http.ResponseWriter, r *http.Request) error
 	return sendResponse(w, chapter, http.StatusOK)
 }
 
+// UpdateChapter godoc
+// @Summary      Update chapter
+// @Description  Update details of an existing chapter
+// @Tags         chapters
+// @Accept       json
+// @Produce      json
+// @Param        book_id     path      string            true  "Book ID"
+// @Param        chapter_id  path      string            true  "Chapter ID"
+// @Param        chapter     body      entities.Chapter  true  "Chapter Update Details"
+// @Success      200         {object}  entities.Chapter
+// @Failure      400         {object}  map[string]interface{}
+// @Router       /books/{book_id}/chapters/{chapter_id} [put]
 func (h *handlerV1) UpdateChapter(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "UpdateChapter")
@@ -174,6 +222,17 @@ func (h *handlerV1) UpdateChapter(w http.ResponseWriter, r *http.Request) error 
 	return sendResponse(w, chapter, http.StatusOK)
 }
 
+// DeleteChapter godoc
+// @Summary      Delete chapter
+// @Description  Permanently delete a chapter
+// @Tags         chapters
+// @Accept       json
+// @Produce      json
+// @Param        book_id     path      string  true  "Book ID"
+// @Param        chapter_id  path      string  true  "Chapter ID"
+// @Success      200         {object}  map[string]interface{}
+// @Failure      400         {object}  map[string]interface{}
+// @Router       /books/{book_id}/chapters/{chapter_id} [delete]
 func (h *handlerV1) DeleteChapter(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "DeleteChapter")

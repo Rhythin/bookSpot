@@ -14,6 +14,16 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+// Register godoc
+// @Summary      Register a new user
+// @Description  Create a new user account and returns a temporary token
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        request  body      packets.RegisterRequest  true  "Register Request"
+// @Success      201      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /user/register [post]
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "Register")
@@ -40,6 +50,16 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (err error) {
 	return sendResponse(w, messages, http.StatusCreated)
 }
 
+// Login godoc
+// @Summary      User login
+// @Description  Authenticate user and returns a temporary token
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        request  body      packets.LoginRequest  true  "Login Request"
+// @Success      200      {string}  string
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /user/login [post]
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "Login")
@@ -61,6 +81,18 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) (err error) {
 	return sendResponse(w, tempToken, http.StatusOK)
 }
 
+// GetUsers godoc
+// @Summary      List users
+// @Description  Get a paginated list of users
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        limit   query     int     false  "Limit"
+// @Param        offset  query     int     false  "Offset"
+// @Param        search  query     string  false  "Search term"
+// @Success      200     {object}  packets.ListUsersResponse
+// @Failure      500     {object}  map[string]interface{}
+// @Router       /user [get]
 func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "GetUsers")
@@ -98,6 +130,17 @@ func (h *handler) GetUsers(w http.ResponseWriter, r *http.Request) (err error) {
 	return sendResponse(w, users, http.StatusOK)
 }
 
+// GetUser godoc
+// @Summary      Get user by ID
+// @Description  Get detailed information about a specific user
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      string  true  "User ID"
+// @Success      200     {object}  packets.UserDetails
+// @Failure      400     {object}  map[string]interface{}
+// @Failure      404     {object}  map[string]interface{}
+// @Router       /user/{userID} [get]
 func (h *handler) GetUser(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "GetUser")
@@ -118,6 +161,14 @@ func (h *handler) GetUser(w http.ResponseWriter, r *http.Request) (err error) {
 	return sendResponse(w, user, http.StatusOK)
 }
 
+// Logout godoc
+// @Summary      User logout
+// @Description  Log out the current user
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /user/logout [post]
 func (h *handler) Logout(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "Logout")
@@ -135,6 +186,16 @@ func (h *handler) Logout(w http.ResponseWriter, r *http.Request) (err error) {
 	return sendResponse(w, messages, http.StatusOK)
 }
 
+// DeleteUser godoc
+// @Summary      Delete user
+// @Description  Permanently delete a user account
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      string  true  "User ID"
+// @Success      200     {object}  map[string]interface{}
+// @Failure      400     {object}  map[string]interface{}
+// @Router       /user/{userID} [delete]
 func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("auth-handler")
 	ctx, span := tr.Start(r.Context(), "DeleteUser")

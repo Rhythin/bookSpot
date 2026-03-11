@@ -15,6 +15,16 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+// CreateBook godoc
+// @Summary      Create a new book
+// @Description  Create a new book with the provided details
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Param        book  body      entities.Book  true  "Book Details"
+// @Success      201   {object}  entities.Book
+// @Failure      400   {object}  map[string]interface{}
+// @Router       /books [post]
 func (h *handlerV1) CreateBook(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "CreateBook")
@@ -48,6 +58,17 @@ func (h *handlerV1) CreateBook(w http.ResponseWriter, r *http.Request) (err erro
 	return sendResponse(w, book, http.StatusCreated)
 }
 
+// GetBookByID godoc
+// @Summary      Get book by ID
+// @Description  Get detailed information about a specific book
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Param        book_id  path      string  true  "Book ID"
+// @Success      200      {object}  entities.Book
+// @Failure      400      {object}  map[string]interface{}
+// @Failure      404      {object}  map[string]interface{}
+// @Router       /books/{book_id} [get]
 func (h *handlerV1) GetBookByID(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "GetBookByID")
@@ -70,6 +91,17 @@ func (h *handlerV1) GetBookByID(w http.ResponseWriter, r *http.Request) (err err
 	return sendResponse(w, book, http.StatusOK)
 }
 
+// UpdateBook godoc
+// @Summary      Update book
+// @Description  Update details of an existing book
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Param        book_id  path      string         true  "Book ID"
+// @Param        book     body      entities.Book  true  "Book Update Details"
+// @Success      200      {object}  entities.Book
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /books/{book_id} [put]
 func (h *handlerV1) UpdateBook(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "UpdateBook")
@@ -105,6 +137,16 @@ func (h *handlerV1) UpdateBook(w http.ResponseWriter, r *http.Request) (err erro
 	return sendResponse(w, book, http.StatusOK)
 }
 
+// DeleteBook godoc
+// @Summary      Delete book
+// @Description  Permanently delete a book
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Param        book_id  path      string  true  "Book ID"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /books/{book_id} [delete]
 func (h *handlerV1) DeleteBook(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "DeleteBook")
@@ -126,6 +168,18 @@ func (h *handlerV1) DeleteBook(w http.ResponseWriter, r *http.Request) (err erro
 	return sendResponse(w, nil, http.StatusOK)
 }
 
+// GetBooks godoc
+// @Summary      List books
+// @Description  Get a paginated list of books
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Param        limit   query     int     false  "Limit"
+// @Param        offset  query     int     false  "Offset"
+// @Param        search  query     string  false  "Search term"
+// @Success      200     {object}  packets.ListBooksResponse
+// @Failure      500     {object}  map[string]interface{}
+// @Router       /books [get]
 func (h *handlerV1) GetBooks(w http.ResponseWriter, r *http.Request) (err error) {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "GetBooks")

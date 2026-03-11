@@ -15,6 +15,17 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+// AddToReadingList godoc
+// @Summary      Add book to reading list
+// @Description  Add a book to the user's personal reading list
+// @Tags         reading-list
+// @Accept       json
+// @Produce      json
+// @Param        bookID     query     string  true   "Book ID"
+// @Param        chapterID  query     string  false  "Starting Chapter ID"
+// @Success      200        {object}  map[string]interface{}
+// @Failure      400        {object}  map[string]interface{}
+// @Router       /reading-list [post]
 func (h *handlerV1) AddToReadingList(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "AddToReadingList")
@@ -50,6 +61,17 @@ func (h *handlerV1) AddToReadingList(w http.ResponseWriter, r *http.Request) err
 	return sendResponse(w, nil, http.StatusOK)
 }
 
+// RemoveFromReadingList godoc
+// @Summary      Remove book from reading list
+// @Description  Remove a specific entry from the user's reading list
+// @Tags         reading-list
+// @Accept       json
+// @Produce      json
+// @Param        listEntryID  path      string  true  "Reading List Entry ID"
+// @Param        bookID       query     string  true  "Book ID"
+// @Success      200          {object}  map[string]interface{}
+// @Failure      400          {object}  map[string]interface{}
+// @Router       /reading-list/{listEntryID} [delete]
 func (h *handlerV1) RemoveFromReadingList(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "RemoveFromReadingList")
@@ -93,6 +115,18 @@ func (h *handlerV1) RemoveFromReadingList(w http.ResponseWriter, r *http.Request
 	return sendResponse(w, nil, http.StatusOK)
 }
 
+// UpdateLastReadChapter godoc
+// @Summary      Update reading progress
+// @Description  Update the last read chapter for a book in the reading list
+// @Tags         reading-list
+// @Accept       json
+// @Produce      json
+// @Param        listEntryID  path      string  true  "Reading List Entry ID"
+// @Param        bookID       path      string  true  "Book ID"
+// @Param        chapterID    path      string  true  "Last Read Chapter ID"
+// @Success      200          {object}  map[string]interface{}
+// @Failure      400          {object}  map[string]interface{}
+// @Router       /reading-list/{listEntryID}/book/{bookID}/chapter/{chapterID} [put]
 func (h *handlerV1) UpdateLastReadChapter(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "UpdateLastReadChapter")
@@ -134,6 +168,18 @@ func (h *handlerV1) UpdateLastReadChapter(w http.ResponseWriter, r *http.Request
 	return sendResponse(w, nil, http.StatusOK)
 }
 
+// GetReadingList godoc
+// @Summary      Get user's reading list
+// @Description  Get a paginated list of books in the user's reading list
+// @Tags         reading-list
+// @Accept       json
+// @Produce      json
+// @Param        limit   query     int     false  "Limit"
+// @Param        offset  query     int     false  "Offset"
+// @Param        search  query     string  false  "Search term"
+// @Success      200     {object}  packets.ListReadingListResponse
+// @Failure      400     {object}  map[string]interface{}
+// @Router       /reading-list [get]
 func (h *handlerV1) GetReadingList(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("books-handler")
 	ctx, span := tr.Start(r.Context(), "GetReadingList")

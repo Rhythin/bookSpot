@@ -1,0 +1,576 @@
+basePath: /v1
+definitions:
+  github_com_rhythin_bookspot_books-service_internal_entities.Book:
+    properties:
+      author:
+        type: string
+      chapters:
+        items:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Chapter'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities.Chapter:
+    properties:
+      book:
+        $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Book'
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      number:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities_packets.BookDetails:
+    properties:
+      author:
+        type: string
+      chapterCount:
+        type: integer
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities_packets.ChapterDetails:
+    properties:
+      number:
+        type: integer
+      title:
+        type: string
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities_packets.ListBooksResponse:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities_packets.BookDetails'
+        type: array
+      searchCount:
+        type: integer
+      totalCount:
+        type: integer
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities_packets.ListChaptersResponse:
+    properties:
+      chapters:
+        items:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities_packets.ChapterDetails'
+        type: array
+      searchCount:
+        type: integer
+      totalCount:
+        type: integer
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities_packets.ListReadingListResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities_packets.ReadingListEntryDetails'
+        type: array
+      searchCount:
+        type: integer
+      totalCount:
+        type: integer
+    type: object
+  github_com_rhythin_bookspot_books-service_internal_entities_packets.ReadingListEntryDetails:
+    properties:
+      bookID:
+        type: string
+      chapterCount:
+        type: integer
+      lastReadChapter:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API documentation for the Books Service
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Books Service API
+  version: "1.0"
+paths:
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of books
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities_packets.ListBooksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List books
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Create a new book with the provided details
+      parameters:
+      - description: Book Details
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Book'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Book'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new book
+      tags:
+      - books
+  /books/{book_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a book
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete book
+      tags:
+      - books
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific book
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Book'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get book by ID
+      tags:
+      - books
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing book
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      - description: Book Update Details
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Book'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update book
+      tags:
+      - books
+  /books/{book_id}/chapters:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of chapters for a specific book
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities_packets.ListChaptersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List chapters
+      tags:
+      - chapters
+    post:
+      consumes:
+      - application/json
+      description: Add a new chapter to a specific book
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      - description: Chapter Details
+        in: body
+        name: chapter
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Chapter'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Chapter'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Add a new chapter
+      tags:
+      - chapters
+  /books/{book_id}/chapters/{chapter_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a chapter
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      - description: Chapter ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete chapter
+      tags:
+      - chapters
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific chapter
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      - description: Chapter ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Chapter'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get chapter by ID
+      tags:
+      - chapters
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing chapter
+      parameters:
+      - description: Book ID
+        in: path
+        name: book_id
+        required: true
+        type: string
+      - description: Chapter ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: Chapter Update Details
+        in: body
+        name: chapter
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Chapter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities.Chapter'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update chapter
+      tags:
+      - chapters
+  /reading-list:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of books in the user's reading list
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_books-service_internal_entities_packets.ListReadingListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user's reading list
+      tags:
+      - reading-list
+    post:
+      consumes:
+      - application/json
+      description: Add a book to the user's personal reading list
+      parameters:
+      - description: Book ID
+        in: query
+        name: bookID
+        required: true
+        type: string
+      - description: Starting Chapter ID
+        in: query
+        name: chapterID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Add book to reading list
+      tags:
+      - reading-list
+  /reading-list/{listEntryID}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a specific entry from the user's reading list
+      parameters:
+      - description: Reading List Entry ID
+        in: path
+        name: listEntryID
+        required: true
+        type: string
+      - description: Book ID
+        in: query
+        name: bookID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Remove book from reading list
+      tags:
+      - reading-list
+  /reading-list/{listEntryID}/book/{bookID}/chapter/{chapterID}:
+    put:
+      consumes:
+      - application/json
+      description: Update the last read chapter for a book in the reading list
+      parameters:
+      - description: Reading List Entry ID
+        in: path
+        name: listEntryID
+        required: true
+        type: string
+      - description: Book ID
+        in: path
+        name: bookID
+        required: true
+        type: string
+      - description: Last Read Chapter ID
+        in: path
+        name: chapterID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update reading progress
+      tags:
+      - reading-list
+swagger: "2.0"

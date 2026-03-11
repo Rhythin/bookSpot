@@ -1,0 +1,452 @@
+basePath: /v1
+definitions:
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - username
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.ListUsersResponse:
+    properties:
+      searchCount:
+        type: integer
+      totalCount:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.UserDetails'
+        type: array
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.RegisterRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      isAdmin:
+        type: boolean
+      lastName:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.ResetPasswordRequest:
+    properties:
+      password:
+        type: string
+      tempToken:
+        type: string
+    required:
+    - password
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.RevokeTokenRequest:
+    properties:
+      userID:
+        type: string
+    required:
+    - userID
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.TokenResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userID:
+        type: string
+    required:
+    - email
+    - firstName
+    - userID
+    type: object
+  github_com_rhythin_bookspot_auth-service_internal_entities_packets.UserDetails:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      isAdmin:
+        type: boolean
+      isLocked:
+        type: boolean
+      lastName:
+        type: string
+      loginAttempts:
+        type: integer
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API documentation for the Authentication Service
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Auth Service API
+  version: "1.0"
+paths:
+  /token:
+    get:
+      consumes:
+      - application/json
+      description: Exchanges a temporary token for access and refresh tokens
+      parameters:
+      - description: Temporary Token
+        in: query
+        name: tempToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get auth tokens
+      tags:
+      - token
+  /token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the access token using the refresh token
+      parameters:
+      - description: Refresh Token Request (using UserID)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.RevokeTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh token
+      tags:
+      - token
+  /token/revoke:
+    post:
+      consumes:
+      - application/json
+      description: Revokes tokens for a specific user
+      parameters:
+      - description: Revoke Token Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.RevokeTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Revoke token
+      tags:
+      - token
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of users
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.ListUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List users
+      tags:
+      - user
+  /user/{userID}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a user account
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete user
+      tags:
+      - user
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.UserDetails'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user by ID
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update details for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Update User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update user
+      tags:
+      - user
+  /user/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Request a password reset email
+      parameters:
+      - description: Forgot Password Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Forgot password
+      tags:
+      - user
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and returns a temporary token
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - user
+  /user/logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User logout
+      tags:
+      - user
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account and returns a temporary token
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register a new user
+      tags:
+      - user
+  /user/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using a temporary token
+      parameters:
+      - description: Reset Password Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rhythin_bookspot_auth-service_internal_entities_packets.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reset password
+      tags:
+      - user
+swagger: "2.0"

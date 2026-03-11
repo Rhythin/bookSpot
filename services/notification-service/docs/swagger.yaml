@@ -1,0 +1,126 @@
+basePath: /v1
+definitions:
+  github_com_rhythin_bookspot_notification-service_internal_entities.Notification:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      isRead:
+        type: boolean
+      message:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+host: localhost:8082
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API documentation for the Notification Service
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Notification Service API
+  version: "1.0"
+paths:
+  /notifications:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of notifications for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_rhythin_bookspot_notification-service_internal_entities.Notification'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user notifications
+      tags:
+      - notifications
+  /notifications/{notificationID}/read:
+    put:
+      consumes:
+      - application/json
+      description: Mark a specific notification as read by its ID
+      parameters:
+      - description: Notification ID
+        in: path
+        name: notificationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Mark notification as read
+      tags:
+      - notifications
+  /notifications/read-all:
+    put:
+      consumes:
+      - application/json
+      description: Mark all notifications for the current user as read
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Mark all notifications as read
+      tags:
+      - notifications
+  /notifications/unread-count:
+    get:
+      consumes:
+      - application/json
+      description: Get the number of unread notifications for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get unread notifications count
+      tags:
+      - notifications
+swagger: "2.0"
