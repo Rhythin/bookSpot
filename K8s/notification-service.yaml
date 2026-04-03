@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: bookspot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - notification-service
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: notification-service
+        image: bookspot-notification-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          tcpSocket:
+            port: 8082
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 8082
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        env:
+        - name: ENV
+          value: "K8S"
+        - name: DB_NAME
+          value: "notification_db"
+        - name: SVC_CODE
+          value: "NOTIFICATION"
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_USER
+        - name: DB_SSL_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_SSL_MODE
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: bookspot-secrets
+              key: DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: bookspot-secrets
+              key: JWT_SECRET
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+        - name: KAFKA_BROKERS
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: KAFKA_BROKERS
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: bookspot
+spec:
+  ports:
+  - port: 8082
+    targetPort: 8082
+  selector:
+    app: notification-service
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: notification-service-hpa
+  namespace: bookspot
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: notification-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books-service
+  namespace: bookspot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: books-service
+  template:
+    metadata:
+      labels:
+        app: books-service
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - books-service
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: books-service
+        image: bookspot-books-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        env:
+        - name: ENV
+          value: "K8S"
+        - name: DB_NAME
+          value: "books_db"
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_USER
+        - name: DB_SSL_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: DB_SSL_MODE
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: bookspot-secrets
+              key: DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: bookspot-secrets
+              key: JWT_SECRET
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: bookspot-config
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: books-service
+  namespace: bookspot
+spec:
+  ports:
+  - port: 8081
+    targetPort: 8081
+  selector:
+    app: books-service
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: books-service-hpa
+  namespace: bookspot
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: books-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
